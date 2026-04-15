@@ -1,0 +1,32 @@
+[
+  {
+    "id": "pat_srv_base",
+    "name": "Carga Operativa Base",
+    "fType": "linear",
+    "duration": 36000,
+    "initValue": 20,
+    "endValue": 22,
+    "minTolerance": 0.5,
+    "maxTolerance": 1
+  },
+  {
+    "id": "pat_srv_actividad",
+    "name": "Pico de Procesamiento Diario",
+    "fType": "curve",
+    "duration": 36000,
+    "initValue": 22,
+    "endValue": 38,
+    "minTolerance": 1,
+    "maxTolerance": 4
+  },
+  {
+    "id": "pat_srv_enfriamiento",
+    "name": "Disipación Térmica Post-Carga",
+    "fType": "curve",
+    "duration": 14400,
+    "initValue": 38,
+    "endValue": 20,
+    "minTolerance": 0.5,
+    "maxTolerance": 1
+  }
+]

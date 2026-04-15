@@ -1,0 +1,41 @@
+{
+  "name": "Red de sensores de Humedad Suelo Aulario 2",
+  "coordinates": [
+    {
+      "lat": 38.38419703703803,
+      "long": -0.5117816747336726,
+      "height": 0,
+      "alias": "HUM_CESPED_PRINCIPAL",
+      "dev_eui": "H2O0000000000001",
+      "join_eui": "0000000000000000",
+      "dev_addr": "H2000001"
+    },
+    {
+      "lat": 38.38387837913361,
+      "long": -0.5098739869400131,
+      "height": 0,
+      "alias": "HUM_ZONA_SOMBRA_ARBOLES",
+      "dev_eui": "H2O0000000000002",
+      "join_eui": "0000000000000000",
+      "dev_addr": "H2000002"
+    },
+    {
+      "lat": 38.384357773934326,
+      "long": -0.5115691796231675,
+      "height": 0,
+      "alias": "HUM_HUERTO_URBANO",
+      "dev_eui": "H2O0000000000003",
+      "join_eui": "0000000000000000",
+      "dev_addr": "H2000003"
+    },
+    {
+      "lat": 38.38503505383953,
+      "long": -0.5111681887022497,
+      "height": 0,
+      "alias": "HUM_TALUD_ENTRADA",
+      "dev_eui": "H2O0000000000004",
+      "join_eui": "0000000000000000",
+      "dev_addr": "H2000004"
+    }
+  ]
+}

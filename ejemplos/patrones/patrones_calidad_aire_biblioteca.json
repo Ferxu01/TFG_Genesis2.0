@@ -1,0 +1,32 @@
+[
+    {
+        "id": "pat_co2_madrugada",
+        "name": "Ciclo Nocturno - Aire Limpio",
+        "fType": "linear",
+        "duration": 28800,
+        "initValue": 400,
+        "endValue": 420,
+        "minTolerance": 5,
+        "maxTolerance": 10
+    },
+    {
+        "id": "pat_co2_jornada",
+        "name": "Ocupación Diaria - Incremento CO2",
+        "fType": "curve",
+        "duration": 43200,
+        "initValue": 420,
+        "endValue": 1100,
+        "minTolerance": 30,
+        "maxTolerance": 80
+    },
+    {
+        "id": "pat_co2_ventilacion",
+        "name": "Cierre y Ventilación Mecánica",
+        "fType": "curve",
+        "duration": 14400,
+        "initValue": 1100,
+        "endValue": 400,
+        "minTolerance": 10,
+        "maxTolerance": 20
+    }
+]

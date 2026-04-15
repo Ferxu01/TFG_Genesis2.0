@@ -1,0 +1,41 @@
+{
+    "name": "Sensores Térmicos - CPD Central",
+    "coordinates": [
+        {
+            "lat": 38.38810066549934,
+            "long": -0.5135795927130463,
+            "height": 1.5,
+            "alias": "TEMP_RACK_01_CORE",
+            "dev_eui": "SRV0000000000001",
+            "join_eui": "0000000000000000",
+            "dev_addr": "DA000001"
+        },
+        {
+            "lat": 38.38806333625896,
+            "long": -0.5135605443684613,
+            "height": 1.5,
+            "alias": "TEMP_RACK_02_GPU",
+            "dev_eui": "SRV0000000000002",
+            "join_eui": "0000000000000000",
+            "dev_addr": "DA000002"
+        },
+        {
+            "lat": 38.38810259962194,
+            "long": -0.5135278535893715,
+            "height": 2,
+            "alias": "TEMP_PASILLO_CALIENTE",
+            "dev_eui": "SRV0000000000003",
+            "join_eui": "0000000000000000",
+            "dev_addr": "DA000003"
+        },
+        {
+            "lat": 38.38796270954619,
+            "long": -0.5134533698980487,
+            "height": 0.5,
+            "alias": "TEMP_PASILLO_FRIO",
+            "dev_eui": "SRV0000000000004",
+            "join_eui": "0000000000000000",
+            "dev_addr": "DA000004"
+        }
+    ]
+}

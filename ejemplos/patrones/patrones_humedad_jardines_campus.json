@@ -1,0 +1,32 @@
+[
+    {
+        "id": "pat_h2o_evaporacion",
+        "name": "Evaporación Solar Diurna",
+        "fType": "linear",
+        "duration": 50400,
+        "initValue": 80,
+        "endValue": 30,
+        "minTolerance": 1,
+        "maxTolerance": 3
+    },
+    {
+        "id": "pat_h2o_riego",
+        "name": "Ciclo de Riego Automático",
+        "fType": "curve",
+        "duration": 7200,
+        "initValue": 30,
+        "endValue": 85,
+        "minTolerance": 0,
+        "maxTolerance": 2
+    },
+    {
+        "id": "pat_h2o_reposo",
+        "name": "Estabilidad Nocturna",
+        "fType": "linear",
+        "duration": 28800,
+        "initValue": 85,
+        "endValue": 80,
+        "minTolerance": 1,
+        "maxTolerance": 2
+    }
+]

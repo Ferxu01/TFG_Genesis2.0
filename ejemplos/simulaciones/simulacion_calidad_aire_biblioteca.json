@@ -1,0 +1,14 @@
+{
+  "name": "Monitorización Calidad Aire - Demo",
+  "timestampIni": 1768431600000,
+  "timestampEnd": 1768690800000,
+  "timeStep": 900,
+  "sections": [],
+  "parameters": "{\n  \"co2_ppm\": \"^pattern\",\n  \"voc_index\": \"^int[50,150]\",\n  \"deveui\": \"^positiondeveui\",\n  \"joineui\": \"^positionjoineui\",\n  \"long\": \"^positionlong\",\n  \"lat\": \"^positionlat\",\n  \"cote\": \"^positioncote\",\n  \"timestamp\": \"^time\"\n}",
+  "minRecordsPerInstant": 1,
+  "maxRecordsPerInstant": 5,
+  "minIntervalBetweenRecords": 5,
+  "maxIntervalBetweenRecords": 10,
+  "noRepeat": 1,
+  "date": "2026-04-09 11:30:00"
+}

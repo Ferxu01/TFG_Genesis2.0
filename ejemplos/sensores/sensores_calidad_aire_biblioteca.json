@@ -1,0 +1,50 @@
+{
+    "name": "Red de sensores de Calidad de Aire - Biblioteca Central",
+    "coordinates": [
+        {
+            "lat": 38.383364358271976,
+            "long": -0.5118288973629963,
+            "height": 2.5,
+            "alias": "CO2_SALA_ESTUDIO_NORTE",
+            "dev_eui": "C020000000000001",
+            "join_eui": "0000000000000000",
+            "dev_addr": "BC000001"
+        },
+        {
+            "lat": 38.383219175495796,
+            "long": -0.5117756755956989,
+            "height": 2.5,
+            "alias": "CO2_SALA_ESTUDIO_SUR",
+            "dev_eui": "C020000000000002",
+            "join_eui": "0000000000000000",
+            "dev_addr": "BC000002"
+        },
+        {
+            "lat": 38.383310200486555,
+            "long": -0.5128588641796908,
+            "height": 3,
+            "alias": "CO2_ZONA_ESTANTERIAS",
+            "dev_eui": "C020000000000003",
+            "join_eui": "0000000000000000",
+            "dev_addr": "BC000003"
+        },
+        {
+            "lat": 38.383056209926124,
+            "long": -0.5123146556207431,
+            "height": 2,
+            "alias": "CO2_SALA_GRUPOS_1",
+            "dev_eui": "C020000000000004",
+            "join_eui": "0000000000000000",
+            "dev_addr": "BC000004"
+        },
+        {
+            "lat": 38.38319372978637,
+            "long": -0.5119602039935395,
+            "height": 2,
+            "alias": "CO2_SALA_GRUPOS_2",
+            "dev_eui": "C020000000000005",
+            "join_eui": "0000000000000000",
+            "dev_addr": "BC000005"
+        }
+    ]
+}

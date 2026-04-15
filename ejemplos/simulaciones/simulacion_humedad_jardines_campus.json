@@ -1,0 +1,14 @@
+{
+  "name": "Gestión Hídrica Campus",
+  "timestampIni": 1772704800000,
+  "timestampEnd": 1772964000000,
+  "timeStep": 3600,
+  "sections": [],
+  "parameters": "{\n  \"humedad_suelo\": \"^pattern\",\n  \"caudal_lpm\": \"^float[0,2]\",\n  \"deveui\": \"^positiondeveui\",\n  \"joineui\": \"^positionjoineui\",\n  \"long\": \"^positionlong\",\n  \"lat\": \"^positionlat\",\n  \"cote\": \"^positioncote\",\n  \"timestamp\": \"^time\"\n}",
+  "minRecordsPerInstant": 2,
+  "maxRecordsPerInstant": 4,
+  "minIntervalBetweenRecords": 2,
+  "maxIntervalBetweenRecords": 4,
+  "noRepeat": 1,
+  "date": "2026-04-09 11:35:00"
+}

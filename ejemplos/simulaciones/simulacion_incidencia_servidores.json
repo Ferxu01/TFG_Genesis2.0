@@ -1,0 +1,14 @@
+{
+  "name": "Simulación: Alerta Térmica Servidores",
+  "timestampIni": 1776204000000,
+  "timestampEnd": 1776463200000,
+  "timeStep": 300,
+  "sections": [],
+  "parameters": "{\n  \"temp_rack\": \"^pattern\",\n  \"potencia_kw\": \"^float[2,5]\",\n  \"fan_speed_rpm\": \"^int[3000,6000]\",\n  \"deveui\": \"^positiondeveui\",\n  \"joineui\": \"^positionjoineui\",\n  \"long\": \"^positionlong\",\n  \"lat\": \"^positionlat\",\n  \"cote\": \"^positioncote\",\n  \"alias\": \"^positionalias\",\n  \"timestamp\": \"^time\"\n}",
+  "minRecordsPerInstant": 1,
+  "maxRecordsPerInstant": 4,
+  "minIntervalBetweenRecords": 1,
+  "maxIntervalBetweenRecords": 3,
+  "noRepeat": 1,
+  "date": "2026-04-09 11:40:00"
+}
