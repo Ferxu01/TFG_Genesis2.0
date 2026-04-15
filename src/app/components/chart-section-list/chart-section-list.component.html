@@ -1,0 +1,29 @@
+<div
+    cdkDropList
+    class="flex flex-col gap-2"
+    (cdkDropListDropped)="handleSectionDrop($event)"
+>
+    @for (section of sections; track section; let i = $index) {
+        <div cdkDrag>
+            @if (activeEditingIndex === i) {
+                <ng-container
+                    [ngTemplateOutlet]="editSectionTemplate ?? defaultView"
+                    [ngTemplateOutletContext]="{ section: section, index: i }"
+                />
+            } @else {
+                <ng-container
+                    [ngTemplateOutlet]="defaultView"
+                    [ngTemplateOutletContext]="{ section: section, index: i }"
+                />
+            }
+        </div>
+    }
+</div>
+
+<ng-template #defaultView let-section="section" let-i="index">
+    <chart-section-list-item
+        [section]="section"
+        (removedSection)="removeSection(i)"
+        (editSection)="requestEdit(section, i)"
+    />
+</ng-template>

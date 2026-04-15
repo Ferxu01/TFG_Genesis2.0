@@ -1,0 +1,15 @@
+{
+    "campo1": "^int[1,30]",
+    "campo2": "^float[20,25]",
+    "deveui": "^positiondeveui",
+    "joineui": "^positionjoineui",
+    "long": "^positionlong",
+    "lat": "^positionlat",
+    "cote": "^positioncote",
+    "timestamp": "^time",
+    "data": {
+        "value": "^pattern",
+        "magnitude": "C",
+        "description": "Temperatura"
+    }
+}

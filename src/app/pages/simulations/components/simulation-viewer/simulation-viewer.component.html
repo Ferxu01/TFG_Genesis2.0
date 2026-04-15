@@ -1,0 +1,38 @@
+<!-- <div
+    class="flex flex-col p-4 bg-card rounded-2xl shadow overflow-auto bg-gray-50 h-full mb-4 border"
+> -->
+@if (hasSimulationData()) {
+    @for (item of simulation(); let i = $index; track i) {
+        <div class="json-item">
+            <div
+                class="json-item-header cursor-default"
+                (click)="toggleRecordExpansion(i)"
+            >
+                <strong>
+                    @if (isRecordExpanded(i)) {
+                        <span class="material-icons text-xl align-middle">
+                            arrow_drop_down
+                        </span>
+                    } @else {
+                        <span class="material-icons text-base align-middle">
+                            play_arrow
+                        </span>
+                    }
+
+                    {{ i }}
+                </strong>
+                :
+
+                @if (isRecordExpanded(i)) {
+                    <div class="json-item-body">
+                        <pre>{{ item | json }}</pre>
+                    </div>
+                } @else {
+                    <span> {{ getRecordSummary(item) }} </span>
+                }
+            </div>
+        </div>
+    }
+} @else {
+    <pre>{{ "{ }" }}</pre>
+}

@@ -1,0 +1,28 @@
+<h2 mat-dialog-title>
+    {{ dialogConfig?.title ?? "Exportar datos" }}
+</h2>
+
+<mat-dialog-content class="flex flex-col gap-4">
+    <p class="text-gray-700">
+        {{ dialogConfig?.message ?? "Selecciona el formato de exportación" }}
+    </p>
+
+    <mat-radio-group [formControl]="formatControl" class="flex flex-col gap-2">
+        <mat-radio-button value="csv"> CSV </mat-radio-button>
+
+        <mat-radio-button value="json"> JSON </mat-radio-button>
+    </mat-radio-group>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end" class="gap-2">
+    <button mat-stroked-button (click)="handleCancel()">No</button>
+
+    <button
+        mat-flat-button
+        color="primary"
+        class="text-white"
+        (click)="handleConfirm()"
+    >
+        Sí, exportar
+    </button>
+</mat-dialog-actions>

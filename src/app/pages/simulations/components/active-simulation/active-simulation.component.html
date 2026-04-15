@@ -1,0 +1,98 @@
+<div class="py-2">
+    <table class="table-auto bg-transparent">
+        <tbody>
+            @for (
+                activeSimulation of activeSimulations;
+                track activeSimulation
+            ) {
+                <tr>
+                    <td
+                        class="py-2 text-s text-gray-600 flex items-center whitespace-nowrap"
+                    >
+                        <div class="flex items-center w-full justify-between">
+                            <div class="flex items-center">
+                                <p class="mr-4">
+                                    <span>
+                                        Elementos generados:
+                                        {{
+                                            getCurrentGenerated(
+                                                activeSimulation
+                                            )
+                                        }}
+                                    </span>
+                                </p>
+
+                                <mat-progress-bar
+                                    style="width: 160px; height: 20px"
+                                    mode="determinate"
+                                    [value]="getPercentage(activeSimulation)"
+                                    [color]="
+                                        getPercentage(activeSimulation) === 100
+                                            ? 'primary'
+                                            : 'warn'
+                                    "
+                                />
+                            </div>
+
+                            @if (!activeSimulation.isRunning) {
+                                <div class="flex items-center space-x-2">
+                                    <button
+                                        class="bg-gray-50 px-4 py-2 rounded shadow"
+                                        (click)="
+                                            openExportDialog(activeSimulation)
+                                        "
+                                    >
+                                        <span class="material-icons">
+                                            file_download
+                                        </span>
+                                    </button>
+
+                                    <button
+                                        class="bg-gray-50 px-4 py-2 rounded shadow"
+                                        (click)="
+                                            handleCloseSimulation(
+                                                activeSimulation
+                                            )
+                                        "
+                                    >
+                                        <span class="material-icons">
+                                            close
+                                        </span>
+                                    </button>
+                                </div>
+                            } @else {
+                                <div class="flex items-center space-x-2">
+                                    <button
+                                        (click)="
+                                            handleTogglePause(activeSimulation)
+                                        "
+                                        class="bg-gray-50 px-4 py-2 rounded flex items-center mr-2 shadow"
+                                    >
+                                        <span class="material-icons text-xll">
+                                            {{
+                                                isPaused(activeSimulation)
+                                                    ? "play_arrow"
+                                                    : "pause"
+                                            }}
+                                        </span>
+                                    </button>
+
+                                    <button
+                                        (click)="
+                                            handleToggleStop(activeSimulation)
+                                        "
+                                        class="bg-gray-50 text-red-500 px-4 py-2 rounded flex items-center shadow"
+                                    >
+                                        <span class="material-icons text-xll">
+                                            stop
+                                        </span>
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

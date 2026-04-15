@@ -1,0 +1,17 @@
+<button
+    type="button"
+    [disabled]="disabled"
+    class="px-4 py-2 bg-blue-600 text-white rounded disabled:bg-gray-400 disabled:cursor-not-allowed disabled:opacity-60"
+    (click)="fileInput.click()"
+>
+    {{ label ?? "Importar JSON" }}
+</button>
+
+<!-- Input oculto -->
+<input
+    #fileInput
+    type="file"
+    accept=".json,application/json"
+    hidden
+    (change)="handleFileSelection($event)"
+/>

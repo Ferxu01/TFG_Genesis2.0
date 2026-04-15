@@ -1,0 +1,548 @@
+<div class="flex flex-col flex-auto min-w-0">
+    <!-- Main -->
+    <div class="flex-auto p-5 sm:px-10">
+        <div class="flex w-full">
+            <div
+                class="max-h-400 rounded-2xl w-3/5 shadow bg-card overflow-hidden px-8 py-6 pb-0"
+            >
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold">Crear Simulación</h2>
+
+                    <div class="flex justify-end">
+                        <app-import-data-button
+                            title="Importar simulación"
+                            (dataImported)="onDataImported($event)"
+                        />
+
+                        <app-export-data-button
+                            title="Exportar simulación"
+                            [disabled]="!isSimulationDataImported()"
+                            [data]="dataToExport()"
+                        />
+                    </div>
+                </div>
+
+                <form
+                    [formGroup]="simulationForm"
+                    (ngSubmit)="handleFormSubmit()"
+                    class="flex flex-col rounded-2xl"
+                >
+                    @if (isLoading()) {
+                        <div class="flex items-center justify-center p-4">
+                            <div class="text-lg">Cargando simulación...</div>
+                        </div>
+                    } @else {
+                        <div class="flex gap-3">
+                            <div class="w-1/2 flex flex-col mr-2">
+                                <!-- Campo Nombre -->
+                                <div class="flex flex-col">
+                                    <mat-label class="block mb-1">
+                                        Nombre
+                                    </mat-label>
+                                    <mat-form-field
+                                        [ngClass]="''"
+                                        class="w-full"
+                                    >
+                                        <input
+                                            matInput
+                                            formControlName="name"
+                                            class="p-0"
+                                        />
+                                    </mat-form-field>
+                                </div>
+
+                                <div class="flex flex-col">
+                                    <mat-label class="block mb-1">
+                                        Nº registros en cada instante
+                                    </mat-label>
+                                    <div class="flex">
+                                        <!-- Campo Mínimo -->
+                                        <div class="w-2/5 mr-2">
+                                            <mat-form-field
+                                                [ngClass]="''"
+                                                class="w-full"
+                                            >
+                                                <input
+                                                    matInput
+                                                    type="number"
+                                                    formControlName="minRecordsPerInstant"
+                                                    placeholder="Mín"
+                                                    min="0"
+                                                />
+                                            </mat-form-field>
+                                        </div>
+                                        <!-- Campo Máximo -->
+                                        <div class="w-3/5">
+                                            <mat-form-field
+                                                [ngClass]="''"
+                                                class="w-full"
+                                            >
+                                                <input
+                                                    matInput
+                                                    type="number"
+                                                    formControlName="maxRecordsPerInstant"
+                                                    placeholder="Máx"
+                                                    min="0"
+                                                />
+                                                <mat-checkbox
+                                                    formControlName="noRepeat"
+                                                    class="ml-4 flex-grow"
+                                                >
+                                                    <p
+                                                        class="text-sm leading-tight"
+                                                    >
+                                                        No repetir elementos
+                                                    </p>
+                                                </mat-checkbox>
+                                            </mat-form-field>
+                                        </div>
+                                    </div>
+                                    <div class="">
+                                        <!-- Mensaje de error -->
+                                        @if (
+                                            simulationForm.hasError(
+                                                "registrosExcedenCoordenadas"
+                                            )
+                                        ) {
+                                            <div
+                                                class="text-red-500 text-sm mb-2"
+                                            >
+                                                El número de registros por
+                                                instante no puede ser superior a
+                                                la cantidad de localizaciones
+                                                cuando "No repetir elementos"
+                                                está activo.
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                                <!-- Campo "Nº elementos a simular" -->
+                                <div class="flex flex-col">
+                                    <mat-label class="block mb-1"
+                                        >Step
+                                        <span style="color: lightslategray"
+                                            >(segundos)</span
+                                        ></mat-label
+                                    >
+                                    <mat-form-field
+                                        [ngClass]="''"
+                                        class="w-full flex items-center p-0"
+                                    >
+                                        <input
+                                            matInput
+                                            type="number"
+                                            formControlName="timeStep"
+                                            min="0"
+                                            required
+                                        />
+                                    </mat-form-field>
+                                </div>
+                            </div>
+
+                            <!-- Segunda columna con "Segundo Nombre" y "Segunda Lista" -->
+                            <div class="flex flex-col w-1/2 justify-between">
+                                <!-- Segundo campo Nombre -->
+                                <div class="flex">
+                                    <div class="flex flex-col w-full mr-2">
+                                        <mat-label class="block mb-1"
+                                            >Colección de Sensores</mat-label
+                                        >
+                                        <mat-form-field
+                                            [ngClass]="''"
+                                            class="w-full p-0"
+                                        >
+                                            <mat-select
+                                                formControlName="sensorId"
+                                            >
+                                                @if (sensor()) {
+                                                    <mat-option
+                                                        [value]="sensor().id"
+                                                    >
+                                                        {{ sensor()?.name }} ({{
+                                                            sensor()
+                                                                ?.coordinates
+                                                                .length
+                                                        }})
+                                                    </mat-option>
+                                                }
+                                            </mat-select>
+                                        </mat-form-field>
+                                    </div>
+                                </div>
+
+                                <!-- Segunda lista desplegable -->
+                                <div class="flex flex-col">
+                                    <mat-label class="block mb-1"
+                                        >Tiempo entre registros
+                                        <span style="color: lightslategray"
+                                            >(seg.)</span
+                                        ></mat-label
+                                    >
+                                    <div class="flex">
+                                        <!-- Campo Mínimo -->
+                                        <div class="w-1/2 mr-2">
+                                            <mat-form-field
+                                                [ngClass]="''"
+                                                class="w-full p-0"
+                                            >
+                                                <input
+                                                    matInput
+                                                    type="number"
+                                                    formControlName="minIntervalBetweenRecords"
+                                                    placeholder="Mín"
+                                                    min="0"
+                                                />
+                                            </mat-form-field>
+                                        </div>
+                                        <!-- Campo Máximo -->
+                                        <div class="w-1/2">
+                                            <mat-form-field
+                                                [ngClass]="''"
+                                                class="w-full p-0"
+                                            >
+                                                <input
+                                                    matInput
+                                                    type="number"
+                                                    formControlName="maxIntervalBetweenRecords"
+                                                    placeholder="Máx"
+                                                    min="0"
+                                                />
+                                            </mat-form-field>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Campos de Fecha de inicio y fin de generación -->
+                                <div class="flex flex-col">
+                                    <div class="flex">
+                                        <div class="flex flex-col w-1/2 mr-2">
+                                            <!-- Fecha Inicio de generación -->
+                                            <mat-label class="block mb-1"
+                                                >Fecha de inicio de generación
+                                                <span
+                                                    style="
+                                                        color: lightslategray;
+                                                    "
+                                                    >(DD/MM/YYYY HH:mm:ss)</span
+                                                >
+                                            </mat-label>
+
+                                            <mat-form-field class="w-full">
+                                                <input
+                                                    matInput
+                                                    type="text"
+                                                    [ngModel]="
+                                                        timestampIniDisplay
+                                                    "
+                                                    (ngModelChange)="
+                                                        onTimestampIniChange(
+                                                            $event
+                                                        )
+                                                    "
+                                                    [ngModelOptions]="{
+                                                        standalone: true,
+                                                    }"
+                                                    placeholder="Introduce una fecha de inicio"
+                                                />
+
+                                                <mat-hint>
+                                                    <button
+                                                        (click)="
+                                                            setPlaceholderDateToNow();
+                                                            showTooltip.set(
+                                                                false
+                                                            )
+                                                        "
+                                                        class="text-gray-500 underline"
+                                                        style="font-size: 12px"
+                                                    >
+                                                        Usar fecha y hora
+                                                        actuales
+                                                    </button>
+                                                </mat-hint>
+                                            </mat-form-field>
+                                        </div>
+
+                                        <div class="flex flex-col w-1/2">
+                                            <!-- Fecha Fin de generación -->
+                                            <mat-label class="block mb-1"
+                                                >Fecha de fin de generación
+                                                <span
+                                                    style="
+                                                        color: lightslategray;
+                                                    "
+                                                    >(DD/MM/YYYY HH:mm:ss)</span
+                                                >
+                                            </mat-label>
+
+                                            <mat-form-field class="w-full">
+                                                <input
+                                                    matInput
+                                                    type="text"
+                                                    [ngModel]="
+                                                        timestampEndDisplay
+                                                    "
+                                                    (ngModelChange)="
+                                                        onTimestampEndChange(
+                                                            $event
+                                                        )
+                                                    "
+                                                    [ngModelOptions]="{
+                                                        standalone: true,
+                                                    }"
+                                                    placeholder="Introduce una fecha de fin"
+                                                />
+
+                                                <!-- Usar la variable para el placeholder -->
+                                                <mat-hint>
+                                                    <button
+                                                        (click)="
+                                                            setPlaceholderDateToThreeDaysLater();
+                                                            showTooltip.set(
+                                                                false
+                                                            )
+                                                        "
+                                                        class="text-gray-500 underline"
+                                                        style="font-size: 12px"
+                                                    >
+                                                        Usar fecha y hora dentro
+                                                        de 3 días
+                                                    </button>
+                                                </mat-hint>
+                                            </mat-form-field>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Campo de Parámetros que ocupa todo el ancho -->
+                    <div class="flex flex-col">
+                        <mat-label class="block flex items-center"
+                            >Parámetros
+                            <div class="flex items-center relative">
+                                <!-- Botón de información con ícono -->
+                                <button
+                                    mat-icon-button
+                                    (click)="toggleTooltip()"
+                                    type="button"
+                                >
+                                    <mat-icon
+                                        class="icon-size-5"
+                                        [svgIcon]="
+                                            'heroicons_outline:information-circle'
+                                        "
+                                    ></mat-icon>
+                                </button>
+                                <!-- Div flotante que muestra el formato JSON -->
+                                @if (showTooltip()) {
+                                    <div
+                                        class="bg-gray-50 absolute left-10 z-50 bg-white border border-gray-300 shadow-lg p-4 min-w-[450px] max-w-[600px] max-h-[480px] overflow-y-auto"
+                                    >
+                                        <div
+                                            class="flex justify-between items-start pb-0"
+                                        >
+                                            <h4 class="text-base font-semibold">
+                                                Formato JSON
+                                            </h4>
+                                            <!-- Botón de cerrar (X) -->
+                                            <button
+                                                mat-icon-button
+                                                (click)="showTooltip.set(false)"
+                                                aria-label="Cerrar"
+                                                type="button"
+                                            >
+                                                <mat-icon
+                                                    class="text-gray-500 icon-size-5"
+                                                    >close</mat-icon
+                                                >
+                                            </button>
+                                        </div>
+                                        <!-- Contenido JSON -->
+                                        <div
+                                            [innerHTML]="
+                                                getFormattedMockParameters()
+                                            "
+                                        ></div>
+
+                                        <!-- Botón para copiar el contenido -->
+                                        <button
+                                            mat-button
+                                            class="absolute right-4 bottom-4 flex items-center"
+                                            [cdkCopyToClipboard]="rawFormatJson"
+                                            (cdkCopyToClipboardCopied)="
+                                                showTooltip.set(false)
+                                            "
+                                        >
+                                            <mat-icon>content_copy</mat-icon>
+                                        </button>
+                                    </div>
+                                }
+                            </div>
+                        </mat-label>
+
+                        <mat-form-field [ngClass]="''" class="w-full">
+                            <textarea
+                                matInput
+                                formControlName="parameters"
+                                appJsonTextarea
+                                class="resize-y min-h-[calc(13.5vh)] max-h-[260px]"
+                                rows="4"
+                                placeholder="{ }"
+                            ></textarea>
+                        </mat-form-field>
+                    </div>
+
+                    <div class="flex my-3">
+                        <!-- max-w-3xl -->
+                        <div
+                            class="w-full border border-gray-300 rounded-xl p-3 shadow-sm bg-secondary"
+                        >
+                            <div class="flex flex-col w-full">
+                                <mat-label
+                                    class="block mb-3 text-lg font-semibold"
+                                >
+                                    Secciones de datos creadas
+                                </mat-label>
+
+                                <chart-section-list
+                                    [sections]="getCurrentSections().value"
+                                    [activeEditingIndex]="editingSectionIndex"
+                                    (sectionRemoved)="onRemoveSection($event)"
+                                    (sectionReordered)="
+                                        onReorderSections($event)
+                                    "
+                                    (editRequested)="
+                                        onClickedEditButton($event)
+                                    "
+                                >
+                                    <ng-template #editSectionTemplate>
+                                        <create-section-form
+                                            [patterns]="patterns()"
+                                            [disabled]="
+                                                !simulationForm.get('timeStep')
+                                                    ?.value
+                                            "
+                                            [editing]="true"
+                                            (edit)="onConfirmEdit($event)"
+                                            (cancel)="cancelSectionEdition()"
+                                        />
+                                    </ng-template>
+                                </chart-section-list>
+                                @if (!getCurrentSections().value.length) {
+                                    <p class="text-gray-600 text-center py-4">
+                                        No se han añadido secciones aún.
+                                    </p>
+                                }
+
+                                @if (creatingSection()) {
+                                    <create-section-form
+                                        [patterns]="patterns()"
+                                        [editing]="false"
+                                        [disabled]="
+                                            !simulationForm.get('timeStep')
+                                                ?.value
+                                        "
+                                        (create)="onCreateSection($event)"
+                                        (cancel)="creatingSection.set(false)"
+                                    />
+                                }
+
+                                <button
+                                    type="button"
+                                    class="mt-2 flex items-center justify-center gap-2 w-full py-2 px-4 bg-gray-50 text-gray-900 border border-gray-200 rounded-lg transition enabled:hover:bg-gray-100 disabled:bg-gray-200 disabled:text-gray-400 disabled:border-gray-200 disabled:cursor-not-allowed"
+                                    [disabled]="
+                                        !simulationForm.get('timeStep')?.value
+                                    "
+                                    (click)="creatingSection.set(true)"
+                                >
+                                    <mat-icon>add</mat-icon>
+                                    Añadir sección
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-end mb-2">
+                        <button
+                            class="px-6 ml-3 text-white"
+                            mat-flat-button
+                            color="primary"
+                            type="submit"
+                            [disabled]="isSubmitting || simulationForm.invalid"
+                        >
+                            Guardar cambios
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="max-h-400 rounded-2xl w-2/5 ml-4">
+                <div
+                    class="flex flex-col p-6 py-0 bg-card rounded-2xl shadow overflow-hidden h-[calc(100vh-102px)]"
+                >
+                    <div
+                        class="flex items-center justify-between border-b -mx-8 px-8 py-5 dark:bg-gray-700 rounded-b-lg mb-4"
+                    >
+                        <div class="flex">
+                            <mat-label class="block text-lg">
+                                Simulación
+                            </mat-label>
+                        </div>
+                        <div class="flex">
+                            <button
+                                mat-stroked-button
+                                color="accent"
+                                class="bg-white mr-4"
+                                type="button"
+                                matTooltip="Instantáneamente"
+                                matTooltipPosition="above"
+                                (click)="initInstantSimulation(simulationId())"
+                                [disabled]="simulationForm.invalid"
+                            >
+                                Iniciar simulación
+                            </button>
+
+                            <!-- Comentado temporalmente hasta retomar uso -->
+                            <!-- <button
+                                mat-stroked-button
+                                color="accent"
+                                (click)="startSimulation(simulationId())"
+                                [disabled]="simulationForm.invalid"
+                                class="bg-white"
+                                type="button"
+                                matTooltip="En tiempo real"
+                                matTooltipPosition="above"
+                            >
+                                <span
+                                    class="material-icons"
+                                    style="vertical-align: middle"
+                                    >play_arrow</span
+                                >
+                            </button> -->
+                        </div>
+                    </div>
+                    <simulation-viewer
+                        class="flex flex-col p-4 bg-card rounded-2xl shadow overflow-auto bg-gray-50 h-full mb-4 border"
+                        [generatedSimulation]="generatedSimulation$ | async"
+                    />
+
+                    <!-- Tabla de progreso de simulación -->
+                    <active-simulation
+                        [activeSimulations]="activeSimulations$ | async"
+                        (pauseSimulation)="
+                            onTogglePauseSimulation($event.simulation.id)
+                        "
+                        (stopSimulation)="
+                            onStopSimulation($event.simulation.id)
+                        "
+                        (closedSimulation)="
+                            onClosedSimulation($event.simulation.id)
+                        "
+                    />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
