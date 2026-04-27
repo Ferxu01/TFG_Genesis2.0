@@ -1,3 +1,11 @@
+/**
+ * @author: Fernando Ortega Jiménez <ferortjim@gmail.com>
+ * @description: Archivo principal de la aplicación Electron que carga el código generado en producción.
+ * @date 2026-04-27
+ * @license: MIT License
+ * @copyright: 2026 Fernando Ortega Jiménez.
+ */
+
 const { app, BrowserWindow } = require("electron");
 const path = require("path");
 
