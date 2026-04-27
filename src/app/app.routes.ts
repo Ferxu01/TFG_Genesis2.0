@@ -5,7 +5,7 @@ import { LayoutComponent } from 'app/layout/layout.component';
 /* eslint-disable max-len */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 export const appRoutes: Route[] = [
-    { path: '', pathMatch: 'full', redirectTo: 'simulations' },
+    { path: '', pathMatch: 'full', redirectTo: 'simulation' },
 
     // Redirect signed-in user to the '/example'
     //
@@ -15,7 +15,7 @@ export const appRoutes: Route[] = [
     {
         path: 'signed-in-redirect',
         pathMatch: 'full',
-        redirectTo: 'simulations',
+        redirectTo: 'simulation',
     },
 
     {
@@ -24,7 +24,7 @@ export const appRoutes: Route[] = [
         data: { layout: 'modern' },
         children: [
             {
-                path: 'simulations',
+                path: 'simulation',
                 loadChildren: () =>
                     import('app/pages/simulations/simulations.routes'),
             },
@@ -41,6 +41,6 @@ export const appRoutes: Route[] = [
     },
     {
         path: '**',
-        redirectTo: 'simulations',
+        redirectTo: 'simulation',
     },
 ];

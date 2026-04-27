@@ -53,10 +53,10 @@ export class ModernLayoutComponent implements OnInit {
     private setNavigationItems(): void {
         this.navigationItems = [
             {
-                id: 'simulaciones',
-                title: 'Simulaciones',
+                id: 'simulacion',
+                title: 'Simulación',
                 type: 'basic',
-                link: '/simulations',
+                link: '/simulation',
                 icon: 'heroicons_outline:adjustments-horizontal',
             },
             {

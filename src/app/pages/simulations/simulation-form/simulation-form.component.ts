@@ -1,6 +1,5 @@
 import { ClipboardModule } from '@angular/cdk/clipboard';
-import { DragDropModule } from '@angular/cdk/drag-drop';
-import { AsyncPipe, DatePipe, NgClass } from '@angular/common';
+import { AsyncPipe, DatePipe } from '@angular/common';
 import {
     ChangeDetectionStrategy,
     Component,
@@ -8,6 +7,7 @@ import {
     DestroyRef,
     effect,
     inject,
+    OnDestroy,
     OnInit,
     signal,
 } from '@angular/core';
@@ -21,7 +21,6 @@ import {
     Validators,
 } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -29,10 +28,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
-import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { Router, RouterModule } from '@angular/router';
 import {
     ChartSectionListComponent,
     SectionReorderEvent,
@@ -77,23 +74,18 @@ import { SimulationStateStore } from '../simulation-state/store/SimulationStateS
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [DatePipe],
     imports: [
-        NgClass,
-        RouterModule,
         FormsModule,
         ReactiveFormsModule,
         MatFormFieldModule,
         MatInputModule,
         MatButtonModule,
         MatIconModule,
-        MatSelectModule,
-        MatButtonToggleModule,
         MatExpansionModule,
         MatTooltipModule,
         MatMenuModule,
         MatCheckboxModule,
         MatDatepickerModule,
         ClipboardModule,
-        DragDropModule,
         AsyncPipe,
         JsonTextareaDirective,
         ActiveSimulationComponent,
@@ -104,9 +96,8 @@ import { SimulationStateStore } from '../simulation-state/store/SimulationStateS
         ExportDataButtonComponent,
     ],
 })
-export class SimulationFormComponent implements OnInit {
+export class SimulationFormComponent implements OnInit, OnDestroy {
     private readonly destroyRef = inject(DestroyRef);
-    private readonly router = inject(Router);
     private readonly sanitizer = inject(DomSanitizer);
 
     private readonly simulationOfflineService = inject(
@@ -189,9 +180,6 @@ export class SimulationFormComponent implements OnInit {
     );
 
     protected readonly sensor$ = toObservable(this.sensor);
-
-    protected isSubmitting = false;
-    protected readonly isLoading = signal(false);
 
     protected readonly simulationId = computed(
         () => this.simulationData()?.id ?? null,
@@ -327,19 +315,6 @@ export class SimulationFormComponent implements OnInit {
         return this.simulationForm.get('sections') as FormArray;
     }
 
-    protected handleFormSubmit(): void {
-        if (this.simulationForm.invalid || this.isSubmitting)
-            return this.markFormGroupTouched(this.simulationForm);
-
-        this.isSubmitting = true;
-        this.simulationForm.disable();
-
-        this.updateSimulationOffline();
-
-        this.isSubmitting = false;
-        this.simulationForm.enable();
-    }
-
     private updateSimulationOffline(): void {
         const rawForm = this.simulationForm.getRawValue();
         const payload = {
@@ -371,24 +346,6 @@ export class SimulationFormComponent implements OnInit {
         this.simulationController.close(simulationId);
     }
 
-    // TODO: Maybe it will be using in the future
-    // protected startSimulation(simulationId: SimulationEntity['id']): void {
-    //     console.log(`▶️ Iniciando simulación ${simulationId} en form...`);
-
-    //     const simulationData = this.buildSimulationEntityFromForm();
-
-    //     this.simulationController.runPeriodic(simulationData);
-
-    //     this.simulationStateStore
-    //         .getSimulationState(simulationData.id)
-    //         .pipe(
-    //             tap((state) => this.generatedSimulation$.next(state.records)),
-    //             takeWhile((state) => state.isRunning, true),
-    //             takeUntilDestroyed(this.destroyRef),
-    //         )
-    //         .subscribe();
-    // }
-
     protected initInstantSimulation(
         simulationId: SimulationEntity['id'],
     ): void {
@@ -404,10 +361,6 @@ export class SimulationFormComponent implements OnInit {
                 takeUntilDestroyed(this.destroyRef),
             )
             .subscribe();
-    }
-
-    protected cancel(): void {
-        this.router.navigate(['/simulations']);
     }
 
     protected setPlaceholderDateToNow(): void {
@@ -691,5 +644,9 @@ export class SimulationFormComponent implements OnInit {
             const numPoints = control.get('numSectionPoints')?.value ?? 0;
             return acc + numPoints;
         }, 0);
+    }
+
+    ngOnDestroy(): void {
+        this.updateSimulationOffline();
     }
 }
