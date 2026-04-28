@@ -32,7 +32,7 @@
                 >
                     <div class="flex flex-row">
                         <div class="flex flex-col w-full">
-                            <mat-label class="block mb-1"> Nombre </mat-label>
+                            <mat-label class="block mb-1">Nombre</mat-label>
                             <mat-form-field class="w-full">
                                 <input
                                     matInput
@@ -90,12 +90,14 @@
                                             "registrosExcedenCoordenadas"
                                         )
                                     ) {
-                                        <div class="text-red-500 text-sm mb-2">
+                                        <mat-error class="text-md">
                                             El número de registros por instante
-                                            no puede ser superior a la cantidad
-                                            de localizaciones cuando "No repetir
-                                            elementos" está activo.
-                                        </div>
+                                            no puede superar las
+                                            {{ sensor()?.coordinates?.length }}
+                                            coordenadas de sensores disponibles
+                                            cuando el modo "No repetir" está
+                                            activo.
+                                        </mat-error>
                                     }
                                 </div>
                             </div>
@@ -104,24 +106,29 @@
                                 <div class="flex">
                                     <div class="flex flex-col w-1/2 mr-2">
                                         <!-- Fecha Inicio de generación -->
-                                        <mat-label class="block mb-1"
-                                            >Fecha de inicio de generación
-                                            <span style="color: lightslategray"
-                                                >(DD/MM/YYYY HH:mm:ss)</span
-                                            >
+                                        <mat-label class="block mb-1">
+                                            Fecha de inicio de generación
+                                            <span style="color: lightslategray">
+                                                (DD/MM/YYYY HH:mm:ss)
+                                            </span>
                                         </mat-label>
 
                                         <mat-form-field class="w-full">
                                             <input
                                                 matInput
                                                 type="text"
-                                                [ngModel]="timestampIniDisplay"
-                                                (ngModelChange)="
-                                                    onTimestampIniChange($event)
+                                                [value]="
+                                                    simulationForm.controls
+                                                        .timestampIni.value
+                                                        | date
+                                                            : 'dd/MM/yyyy HH:mm:ss'
                                                 "
-                                                [ngModelOptions]="{
-                                                    standalone: true,
-                                                }"
+                                                (change)="
+                                                    updateTimestamp(
+                                                        'timestampIni',
+                                                        $event.target.value
+                                                    )
+                                                "
                                                 placeholder="Introduce una fecha de inicio"
                                             />
 
@@ -156,17 +163,21 @@
                                             <input
                                                 matInput
                                                 type="text"
-                                                [ngModel]="timestampEndDisplay"
-                                                (ngModelChange)="
-                                                    onTimestampEndChange($event)
+                                                [value]="
+                                                    simulationForm.controls
+                                                        .timestampEnd.value
+                                                        | date
+                                                            : 'dd/MM/yyyy HH:mm:ss'
                                                 "
-                                                [ngModelOptions]="{
-                                                    standalone: true,
-                                                }"
+                                                (change)="
+                                                    updateTimestamp(
+                                                        'timestampEnd',
+                                                        $event.target.value
+                                                    )
+                                                "
                                                 placeholder="Introduce una fecha de fin"
                                             />
 
-                                            <!-- Usar la variable para el placeholder -->
                                             <mat-hint>
                                                 <button
                                                     type="button"
@@ -262,10 +273,8 @@
                                 >
                                     <mat-icon
                                         class="icon-size-5"
-                                        svgIcon="
-                                            heroicons_outline:information-circle
-                                        "
-                                    ></mat-icon>
+                                        svgIcon="heroicons_outline:information-circle"
+                                    />
                                 </button>
                                 <!-- Div flotante que muestra el formato JSON -->
                                 @if (showTooltip()) {
@@ -276,7 +285,7 @@
                                             class="flex justify-between items-start pb-0"
                                         >
                                             <h4 class="text-base font-semibold">
-                                                Formato JSON
+                                                Ejemplo de parámetros
                                             </h4>
                                             <button
                                                 mat-icon-button
@@ -286,8 +295,9 @@
                                             >
                                                 <mat-icon
                                                     class="text-gray-500 icon-size-5"
-                                                    >close</mat-icon
                                                 >
+                                                    close
+                                                </mat-icon>
                                             </button>
                                         </div>
                                         <!-- Contenido JSON -->
@@ -322,6 +332,16 @@
                                 rows="4"
                                 placeholder="{ }"
                             ></textarea>
+
+                            @if (
+                                simulationForm.controls.parameters.hasError(
+                                    "invalidJsonParameters"
+                                )
+                            ) {
+                                <mat-error class="text-md">
+                                    El formato JSON no es válido
+                                </mat-error>
+                            }
                         </mat-form-field>
                     </div>
 
@@ -412,14 +432,17 @@
                         </div>
                         <div class="flex">
                             <button
-                                mat-stroked-button
-                                color="accent"
-                                class="bg-white mr-4"
                                 type="button"
+                                mat-flat-button
+                                color="primary"
+                                class="text-white"
                                 matTooltip="Instantáneamente"
                                 matTooltipPosition="above"
-                                (click)="initInstantSimulation(simulationId())"
-                                [disabled]="simulationForm.invalid"
+                                (click)="initInstantSimulation()"
+                                [disabled]="
+                                    simulationForm.invalid ||
+                                    !sensor()?.coordinates?.length
+                                "
                             >
                                 Iniciar simulación
                             </button>
@@ -427,10 +450,10 @@
                     </div>
                     <simulation-viewer
                         class="flex flex-col p-4 bg-card rounded-2xl shadow overflow-auto bg-gray-50 h-full mb-4 border"
-                        [generatedSimulation]="generatedSimulation$ | async"
+                        [generatedSimulation]="generatedSimulation()"
                     />
 
-                    <!-- Tabla de progreso de simulación -->
+                    <!-- Progreso de simulación -->
                     <active-simulation
                         [activeSimulations]="activeSimulations$ | async"
                         (pauseSimulation)="

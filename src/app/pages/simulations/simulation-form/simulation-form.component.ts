@@ -11,13 +11,15 @@ import {
     OnInit,
     signal,
 } from '@angular/core';
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
+    AbstractControl,
     FormArray,
     FormControl,
     FormGroup,
-    FormsModule,
     ReactiveFormsModule,
+    ValidationErrors,
+    ValidatorFn,
     Validators,
 } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -46,7 +48,6 @@ import {
 } from 'app/models/forms.model';
 import { Pattern } from 'app/models/Pattern.model';
 import { Section } from 'app/models/Section.model';
-import { SensorEntity } from 'app/models/Sensor.model';
 import { SimulationEntity } from 'app/models/Simulation.model';
 import { ActiveSimulationComponent } from 'app/pages/simulations/components/active-simulation/active-simulation.component';
 import { PatternOfflineService } from 'app/services/offline/pattern-offline.service';
@@ -54,15 +55,7 @@ import { SensorOfflineService } from 'app/services/offline/sensor-offline.servic
 import { SimulationOfflineService } from 'app/services/offline/simulation-offline.service';
 import SIMULATION_PARAMETERS_PLACEHOLDER from 'assets/json/clipboard-simulation-parameters.json';
 import { DateTime } from 'luxon';
-import {
-    BehaviorSubject,
-    combineLatest,
-    debounceTime,
-    filter,
-    startWith,
-    takeWhile,
-    tap,
-} from 'rxjs';
+import { filter, startWith, takeWhile, tap } from 'rxjs';
 import { SimulationViewerComponent } from '../components/simulation-viewer/simulation-viewer.component';
 import { SimulationControllerService } from '../simulation-state/controller/SimulationController.service';
 import { SimulationStateStore } from '../simulation-state/store/SimulationStateStore.service';
@@ -72,9 +65,7 @@ import { SimulationStateStore } from '../simulation-state/store/SimulationStateS
     templateUrl: './simulation-form.component.html',
     standalone: true,
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [DatePipe],
     imports: [
-        FormsModule,
         ReactiveFormsModule,
         MatFormFieldModule,
         MatInputModule,
@@ -87,6 +78,7 @@ import { SimulationStateStore } from '../simulation-state/store/SimulationStateS
         MatDatepickerModule,
         ClipboardModule,
         AsyncPipe,
+        DatePipe,
         JsonTextareaDirective,
         ActiveSimulationComponent,
         SimulationViewerComponent,
@@ -109,8 +101,9 @@ export class SimulationFormComponent implements OnInit, OnDestroy {
     private readonly simulationController = inject(SimulationControllerService);
     private readonly simulationStateStore = inject(SimulationStateStore);
 
-    protected timestampIniDisplay: string | null = null;
-    protected timestampEndDisplay: string | null = null;
+    protected readonly sensor = computed(() =>
+        this.sensorOfflineService.getLoadedSensor(),
+    );
 
     protected readonly creatingSection = signal(false);
     protected editingSectionIndex: number | null = null;
@@ -128,58 +121,63 @@ export class SimulationFormComponent implements OnInit, OnDestroy {
     );
     protected readonly patterns = this.patternsOfflineService.patterns;
 
-    protected readonly simulationForm = new FormGroup<SimulationFormModel>({
-        name: new FormControl('', {
-            nonNullable: true,
-            validators: [Validators.required],
-        }),
-        sensorId: new FormControl(0, {
-            nonNullable: true,
-            validators: [Validators.required],
-        }),
-        timestampIni: new FormControl(null, {
-            nonNullable: true,
-            validators: [Validators.required],
-        }),
-        timestampEnd: new FormControl(null, {
-            nonNullable: true,
-            validators: [Validators.required],
-        }),
-        timeStep: new FormControl(0, {
-            nonNullable: true,
-            validators: [Validators.required, Validators.min(0)],
-        }),
-        sections: new FormArray<FormGroup<SectionFormModel>>([]),
-        parameters: new FormControl('', {
-            validators: [Validators.required],
-        }),
-        minRecordsPerInstant: new FormControl(0, {
-            nonNullable: true,
-            validators: [Validators.required, Validators.min(0)],
-        }),
-        maxRecordsPerInstant: new FormControl(0, {
-            nonNullable: true,
-            validators: [Validators.required, Validators.min(0)],
-        }),
-        minIntervalBetweenRecords: new FormControl(0, {
-            nonNullable: true,
-            validators: [Validators.required, Validators.min(0)],
-        }),
-        maxIntervalBetweenRecords: new FormControl(0, {
-            nonNullable: true,
-            validators: [Validators.required, Validators.min(0)],
-        }),
-        noRepeat: new FormControl(false),
-        date: new FormControl(DateTime.now().toFormat('yyyy-MM-dd HH:mm:ss'), {
-            validators: [Validators.required],
-        }),
-    });
-
-    protected readonly sensor = computed(() =>
-        this.sensorOfflineService.getLoadedSensor(),
+    protected readonly simulationForm = new FormGroup<SimulationFormModel>(
+        {
+            name: new FormControl('', {
+                nonNullable: true,
+                validators: [Validators.required],
+            }),
+            sensorId: new FormControl(0, {
+                nonNullable: true,
+                validators: [Validators.required],
+            }),
+            timestampIni: new FormControl(null, {
+                nonNullable: true,
+                validators: [Validators.required],
+            }),
+            timestampEnd: new FormControl(null, {
+                nonNullable: true,
+                validators: [Validators.required],
+            }),
+            timeStep: new FormControl(0, {
+                nonNullable: true,
+                validators: [Validators.required, Validators.min(0)],
+            }),
+            sections: new FormArray<FormGroup<SectionFormModel>>([], {
+                validators: [Validators.required, Validators.minLength(1)],
+            }),
+            parameters: new FormControl('', {
+                validators: [
+                    Validators.required,
+                    this.validateJsonParameters(),
+                ],
+            }),
+            minRecordsPerInstant: new FormControl(0, {
+                nonNullable: true,
+                validators: [Validators.required, Validators.min(0)],
+            }),
+            maxRecordsPerInstant: new FormControl(0, {
+                nonNullable: true,
+                validators: [Validators.required, Validators.min(0)],
+            }),
+            minIntervalBetweenRecords: new FormControl(0, {
+                nonNullable: true,
+                validators: [Validators.required, Validators.min(0)],
+            }),
+            maxIntervalBetweenRecords: new FormControl(0, {
+                nonNullable: true,
+                validators: [Validators.required, Validators.min(0)],
+            }),
+            noRepeat: new FormControl(false),
+            date: new FormControl(
+                DateTime.now().toFormat('yyyy-MM-dd HH:mm:ss'),
+                {
+                    validators: [Validators.required],
+                },
+            ),
+        },
+        { validators: this.sensorCoordinatesBoundValidator() },
     );
-
-    protected readonly sensor$ = toObservable(this.sensor);
 
     protected readonly simulationId = computed(
         () => this.simulationData()?.id ?? null,
@@ -188,24 +186,56 @@ export class SimulationFormComponent implements OnInit, OnDestroy {
         this.simulationOfflineService.getLoadedSimulation(),
     );
 
-    protected readonly showAlert = signal(false);
-
     protected readonly showTooltip = signal(false);
 
     protected readonly activeSimulations$ =
         this.simulationStateStore.getActiveSimulations();
 
-    protected readonly generatedSimulation$ = new BehaviorSubject<any[]>([]);
+    protected readonly generatedSimulation = signal<any[]>([]);
 
     private readonly jsonData = SIMULATION_PARAMETERS_PLACEHOLDER;
     protected readonly rawFormatJson = JSON.stringify(this.jsonData, null, 2);
 
     constructor() {
         effect(() => {
+            // Re-validate when loaded sensor changes
+            this.sensor();
+            this.simulationForm.updateValueAndValidity();
+        });
+
+        effect(() => {
             const simulationData = this.simulationData();
             if (!simulationData) return;
 
             this.populateFormFromImport();
+        });
+
+        effect(() => {
+            const patterns = this.patterns();
+            if (!patterns.length) return;
+
+            const currentSections = this.getCurrentSections();
+            currentSections.controls.forEach((sectionControl) => {
+                const patternId = sectionControl.get('pattern.id')?.value;
+                const updatedPattern = patterns.find((p) => p.id === patternId);
+
+                if (updatedPattern) {
+                    // PatchValue to update data if original pattern changed
+                    sectionControl
+                        .get('pattern')
+                        ?.patchValue(updatedPattern, { emitEvent: false });
+
+                    // Recalculate points if duration changed on source truth
+                    const timeStep =
+                        this.simulationForm.get('timeStep')?.value ?? 1;
+                    sectionControl
+                        .get('numSectionPoints')
+                        ?.setValue(
+                            Math.floor(updatedPattern.duration / timeStep),
+                            { emitEvent: false },
+                        );
+                }
+            });
         });
     }
 
@@ -269,29 +299,17 @@ export class SimulationFormComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * Updates the form's start timestamp based on string input from the UI.
+     * Updates the form's timestamp based on string input from the UI.
+     * @param controlName Control name to update ('timestampIni' or 'timestampEnd').
      * @param value Date string in 'dd/MM/yyyy HH:mm:ss' format.
      */
-    protected onTimestampIniChange(value: string): void {
-        this.timestampIniDisplay = value;
-
+    protected updateTimestamp(
+        controlName: 'timestampIni' | 'timestampEnd',
+        value: string,
+    ): void {
         const datetime = DateTime.fromFormat(value, 'dd/MM/yyyy HH:mm:ss');
         if (!datetime.isValid) return;
-
-        this.simulationForm.controls.timestampIni.setValue(datetime.toMillis());
-    }
-
-    /**
-     * Updates the form's end timestamp based on string input from the UI.
-     * @param value Date string in 'dd/MM/yyyy HH:mm:ss' format.
-     */
-    protected onTimestampEndChange(value: string): void {
-        this.timestampEndDisplay = value;
-
-        const datetime = DateTime.fromFormat(value, 'dd/MM/yyyy HH:mm:ss');
-        if (!datetime.isValid) return;
-
-        this.simulationForm.controls.timestampEnd.setValue(datetime.toMillis());
+        this.simulationForm.get(controlName)?.setValue(datetime.toMillis());
     }
 
     /**
@@ -346,9 +364,10 @@ export class SimulationFormComponent implements OnInit, OnDestroy {
         this.simulationController.close(simulationId);
     }
 
-    protected initInstantSimulation(
-        simulationId: SimulationEntity['id'],
-    ): void {
+    protected initInstantSimulation(): void {
+        // Save current form data to offline storage if not saved previously by ngOnDestroy or if changes were made after last save
+        this.updateSimulationOffline();
+
         const simulationData = this.buildSimulationEntityFromForm();
 
         this.simulationController.runInstant(simulationData);
@@ -356,7 +375,7 @@ export class SimulationFormComponent implements OnInit, OnDestroy {
         this.simulationStateStore
             .getSimulationState(simulationData.id)
             .pipe(
-                tap((state) => this.generatedSimulation$.next(state.records)),
+                tap((state) => this.generatedSimulation.set(state.records)),
                 takeWhile((state) => state.isRunning, true),
                 takeUntilDestroyed(this.destroyRef),
             )
@@ -365,14 +384,14 @@ export class SimulationFormComponent implements OnInit, OnDestroy {
 
     protected setPlaceholderDateToNow(): void {
         const datetime = DateTime.now().toFormat('dd/MM/yyyy HH:mm:ss');
-        this.onTimestampIniChange(datetime);
+        this.updateTimestamp('timestampIni', datetime);
     }
 
     protected setPlaceholderDateToThreeDaysLater(): void {
         const datetime = DateTime.now()
             .plus({ days: 3 })
             .toFormat('dd/MM/yyyy HH:mm:ss');
-        this.onTimestampEndChange(datetime);
+        this.updateTimestamp('timestampEnd', datetime);
     }
 
     protected toggleTooltip(): void {
@@ -413,28 +432,23 @@ export class SimulationFormComponent implements OnInit, OnDestroy {
         });
 
         if (simulation.timestampIni) {
-            const ini = DateTime.fromMillis(simulation.timestampIni).toFormat(
-                'dd/MM/yyyy HH:mm:ss',
-            );
-
-            this.timestampIniDisplay = ini;
-            this.simulationForm.controls.timestampIni.setValue(
-                simulation.timestampIni,
+            this.updateTimestamp(
+                'timestampIni',
+                DateTime.fromMillis(simulation.timestampIni).toFormat(
+                    'dd/MM/yyyy HH:mm:ss',
+                ),
             );
         }
 
         if (simulation.timestampEnd) {
-            const end = DateTime.fromMillis(simulation.timestampEnd).toFormat(
-                'dd/MM/yyyy HH:mm:ss',
-            );
-
-            this.timestampEndDisplay = end;
-            this.simulationForm.controls.timestampEnd.setValue(
-                simulation.timestampEnd,
+            this.updateTimestamp(
+                'timestampEnd',
+                DateTime.fromMillis(simulation.timestampEnd).toFormat(
+                    'dd/MM/yyyy HH:mm:ss',
+                ),
             );
         }
 
-        // 🔹 Reconstruir secciones
         this.populateSections(simulation.sections);
     }
 
@@ -521,14 +535,6 @@ export class SimulationFormComponent implements OnInit, OnDestroy {
         });
     }
 
-    private markFormGroupTouched(formGroup: FormGroup): void {
-        Object.values(formGroup.controls).forEach((control) => {
-            if (control instanceof FormGroup)
-                this.markFormGroupTouched(control);
-            else control.markAsTouched();
-        });
-    }
-
     private recalculateSectionPoints(timeStep: number): void {
         const sections = this.simulationForm.get('sections') as FormArray;
 
@@ -561,15 +567,6 @@ export class SimulationFormComponent implements OnInit, OnDestroy {
      */
     private setupFormListeners(): void {
         this.simulationForm
-            .get('parameters')
-            ?.valueChanges.pipe(
-                debounceTime(300),
-                tap((value) => this.validateJsonParameters(value)),
-                takeUntilDestroyed(this.destroyRef),
-            )
-            .subscribe();
-
-        this.simulationForm
             .get('timeStep')
             ?.valueChanges.pipe(
                 startWith(this.simulationForm.get('timeStep')?.value),
@@ -581,56 +578,55 @@ export class SimulationFormComponent implements OnInit, OnDestroy {
                 takeUntilDestroyed(this.destroyRef),
             )
             .subscribe();
-
-        combineLatest([
-            this.simulationForm
-                .get('noRepeat')
-                ?.valueChanges.pipe(startWith(false)),
-            this.sensor$.pipe(startWith(null)),
-        ])
-            .pipe(
-                tap(([noRepeat, sensor]) => {
-                    if (!noRepeat || !sensor) return;
-
-                    this.validateNoRepeat(sensor);
-                }),
-                takeUntilDestroyed(this.destroyRef),
-            )
-            .subscribe();
     }
 
     /**
-     * Validates if the parameters string is a valid JSON. Sets showAlert signal accordingly.
-     * @param parameters The string value to validate.
+     * Validates if the parameters string is a valid JSON. Returns a ValidatorFn for use in Angular forms.
      */
-    private validateJsonParameters(parameters: string): void {
-        try {
-            JSON.parse(parameters);
-            this.showAlert.set(false);
-        } catch {
-            this.showAlert.set(true);
-        }
+    private validateJsonParameters(): ValidatorFn {
+        return (control: AbstractControl): ValidationErrors | null => {
+            if (!control.value) return null;
+            try {
+                JSON.parse(control.value);
+                return null;
+            } catch (e) {
+                return { invalidJsonParameters: true };
+            }
+        };
     }
 
     /**
      * Validates if 'records per instant' settings exceed the available sensor coordinates when 'noRepeat' is enabled.
-     * @param sensor The current sensor entity containing coordinate data.
      */
-    private validateNoRepeat(sensor: SensorEntity): void {
-        if (!sensor?.coordinates?.length) return;
+    private sensorCoordinatesBoundValidator(): ValidatorFn {
+        return (group: AbstractControl): ValidationErrors | null => {
+            const sensor = this.sensor();
+            if (!sensor?.coordinates?.length) return null;
 
-        const maxCoordinates = sensor.coordinates.length;
-        const minRecords =
-            this.simulationForm.get('minRecordsPerInstant')?.value ?? 0;
-        const maxRecords =
-            this.simulationForm.get('maxRecordsPerInstant')?.value ?? 0;
+            const noRepeat = !!group.get('noRepeat')?.value;
+            if (!noRepeat) return null;
 
-        if (minRecords <= maxCoordinates && maxRecords <= maxCoordinates)
-            return this.simulationForm.setErrors(null);
+            const maxCoordinates = sensor.coordinates.length;
+            const minRecords = group.get('minRecordsPerInstant')?.value ?? 0;
+            const maxRecords = group.get('maxRecordsPerInstant')?.value ?? 0;
 
-        this.simulationForm.setErrors({
-            registrosExcedenCoordenadas: true,
-        });
+            if (minRecords > maxCoordinates || maxRecords > maxCoordinates)
+                return { registrosExcedenCoordenadas: true };
+
+            return null;
+        };
+    }
+
+    /**
+     * Validate that sections FormArray contains at least one element.
+     */
+    private atLeastOneSectionValidator(): ValidatorFn {
+        return (control: AbstractControl): ValidationErrors | null => {
+            const formArray = control as FormArray;
+            const hasSections = formArray && formArray.length > 0;
+
+            return hasSections ? null : { noSectionsAdded: true };
+        };
     }
 
     /**
