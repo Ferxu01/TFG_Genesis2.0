@@ -8,7 +8,6 @@ import {
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatPaginatorModule } from '@angular/material/paginator';
 import { Router, RouterModule } from '@angular/router';
 import { ExportDataButtonComponent } from 'app/components/export-data-button/export-data-button.component';
 import { ImportDataButtonComponent } from 'app/components/import-data-button/import-data-button.component';
@@ -28,7 +27,6 @@ import { PatternOfflineService } from 'app/services/offline/pattern-offline.serv
     imports: [
         RouterModule,
         FormsModule,
-        MatPaginatorModule,
         MatButtonModule,
         MatIconModule,
         TimePipe,
@@ -65,8 +63,7 @@ export class PatternsListComponent {
         this.searchQuery.set(inputElement.value);
     }
 
-    protected onDeleteClick(event: Event, patternId: Pattern['id']): void {
-        event.stopPropagation();
+    protected onDeleteClick(patternId: Pattern['id']): void {
         this.selectedPatternId.set(patternId);
     }
 
@@ -78,7 +75,7 @@ export class PatternsListComponent {
         this.router.navigate(['patterns/edit', patternId]);
     }
 
-    protected deletePattern(patternId: Pattern['id']): void {
+    protected deletePattern(): void {
         const id = this.selectedPatternId();
         if (!id) return;
 

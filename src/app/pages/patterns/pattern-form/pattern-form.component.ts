@@ -1,4 +1,3 @@
-import { NgClass } from '@angular/common';
 import {
     ChangeDetectionStrategy,
     Component,
@@ -37,7 +36,6 @@ import { PatternOfflineService } from 'app/services/offline/pattern-offline.serv
     standalone: true,
     changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [
-        NgClass,
         RouterModule,
         ReactiveFormsModule,
         MatButtonModule,
