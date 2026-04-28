@@ -17,6 +17,7 @@ import {
     DataExportService,
     ExportFormat,
 } from 'app/services/data-export.service';
+import { SimulationOfflineService } from 'app/services/offline/simulation-offline.service';
 import { convertSecondsToMilliseconds } from 'app/utils/Date.utils';
 import { flattenObject } from 'app/utils/Object.utils';
 import { take } from 'rxjs';
@@ -35,6 +36,9 @@ import { take } from 'rxjs';
 export class ActiveSimulationComponent {
     private readonly dialog = inject(MatDialog);
     private readonly dataExportService = inject(DataExportService);
+    private readonly simulationOfflineService = inject(
+        SimulationOfflineService,
+    );
 
     @Input({ required: true }) activeSimulations: SimulationState[] = [];
 
@@ -102,13 +106,18 @@ export class ActiveSimulationComponent {
             .subscribe((result: ExportDialogResult) => {
                 if (!result?.confirmed) return;
 
+                // Replace spaces with underscores
+                const simulationName = this.simulationOfflineService
+                    .getLoadedSimulation()
+                    .name.replace(/\s+/g, '_');
+
                 this.dataExportService.download<unknown>(
                     state.records,
                     result.format === 'csv'
                         ? ExportFormat.CSV
                         : ExportFormat.JSON,
                     {
-                        fileName: 'section-points',
+                        fileName: simulationName,
                         mapper: (item, index) => ({
                             index,
                             ...flattenObject(item),
