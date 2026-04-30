@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { computed, Injectable, signal } from '@angular/core';
 import { SensorEntity } from 'app/models/Sensor.model';
 import { SimulationEntity } from 'app/models/Simulation.model';
 
@@ -9,6 +9,15 @@ import { SimulationEntity } from 'app/models/Simulation.model';
 @Injectable({ providedIn: 'root' })
 export class SimulationOfflineService {
     private readonly loadedSimulation = signal<SimulationEntity>(null);
+
+    public readonly usingPatternIds = computed(() => {
+        const simulation = this.loadedSimulation();
+        if (!simulation || !simulation.sections) return new Set<string>();
+
+        return new Set(
+            simulation.sections.map((section) => section.pattern.id),
+        );
+    });
 
     getLoadedSimulation(): SimulationEntity {
         return this.loadedSimulation();

@@ -13,7 +13,10 @@
                                 Lista de Patrones
                             </h2>
                         </div>
+                    </div>
 
+                    <div class="flex">
+                        <!-- Botones importar/exportar -->
                         <app-import-data-button
                             label="Importar patrones"
                             title="Importar patrones"
@@ -26,16 +29,13 @@
                             [disabled]="!patterns().length"
                             [data]="patterns()"
                         />
-                    </div>
 
-                    <div class="flex">
-                        <!-- Actions -->
-                        <div class="relative mr-4">
+                        <div class="relative mx-4">
                             <input
                                 type="text"
                                 [ngModel]="searchQuery()"
                                 (input)="handleSearchChange($event)"
-                                placeholder="Buscar..."
+                                placeholder="Buscar por nombre..."
                                 class="bg-white-200 border border-gray-300 text-gray-900 rounded-lg py-2 px-4 focus:outline-none focus:ring-1 focus:ring-sky-500"
                             />
                             <mat-icon
@@ -43,11 +43,10 @@
                                 svgIcon="heroicons_mini:magnifying-glass"
                             />
                         </div>
-                        <div
-                            class="flex shrink-0 items-center mt-6 sm:mt-0 sm:ml-4"
-                        >
+
+                        <div class="flex shrink-0 items-center mt-6 sm:mt-0">
                             <button
-                                class="ml-3 bg-sky-400 hover:bg-sky-500 text-white"
+                                class="bg-sky-400 hover:bg-sky-500 text-white"
                                 mat-flat-button
                                 [routerLink]="['create']"
                             >
@@ -55,106 +54,131 @@
                                     class="icon-size-4"
                                     svgIcon="heroicons_mini:plus"
                                 />
-                                <span class="ml-2">Nueva</span>
+                                <span class="ml-2">Añadir</span>
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <table class="w-full table-fixed bg-transparent">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th
-                                class="w-30 px-4 py-3 text-left text-s font-medium text-gray-500 tracking-wider"
-                            >
-                                ID
-                            </th>
-                            <th
-                                class="w-[30%] px-4 py-3 text-left text-s font-medium text-gray-500 tracking-wider"
-                            >
-                                Nombre
-                            </th>
-                            <th
-                                class="w-[15%] px-4 py-3 text-left text-s font-medium text-gray-500 tracking-wider"
-                            >
-                                Tipo de Función
-                            </th>
-                            <th
-                                class="w-[15%] px-6 py-3 text-left text-s font-medium text-gray-500 tracking-wider"
-                            >
-                                Duración
-                            </th>
-                            <th
-                                class="w-[15%] px-6 py-3 text-left text-s font-medium text-gray-500 tracking-wider"
-                            >
-                                Valor Inicial - Final
-                            </th>
-                            <th
-                                class="w-[15%] px-6 py-3 text-left text-s font-medium text-gray-500 tracking-wider"
-                            >
-                                Variación Mín - Máx
-                            </th>
-                            <th
-                                class="px-6 py-3 text-left text-s font-medium text-gray-500 tracking-wider flex justify-end"
-                            ></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @for (pattern of filteredPatterns(); track pattern.id) {
-                            <tr
-                                class="cursor-pointer"
-                                (click)="navigateToEditPattern(pattern.id)"
-                            >
-                                <td
-                                    class="px-4 py-4 whitespace-nowrap text-s font-medium text-gray-600 truncate"
+                <div
+                    class="overflow-x-auto bg-white rounded-lg border border-gray-200"
+                >
+                    <table class="w-full table-fixed bg-transparent">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th
+                                    class="w-30 px-4 py-3 text-left text-s font-medium text-gray-500 tracking-wider border-r"
                                 >
-                                    {{ pattern.id }}
-                                </td>
-                                <td
-                                    class="px-2 py-4 whitespace-nowrap text-s font-medium text-gray-600 truncate"
+                                    ID
+                                </th>
+                                <th
+                                    class="w-[30%] px-4 py-3 text-left text-s font-medium text-gray-500 tracking-wider border-r"
                                 >
-                                    {{ pattern.name }}
-                                </td>
-                                <td
-                                    class="px-6 py-4 whitespace-nowrap text-s font-medium text-gray-600"
+                                    Nombre
+                                </th>
+                                <th
+                                    class="w-[15%] px-4 py-3 text-left text-s font-medium text-gray-500 tracking-wider border-r"
                                 >
-                                    {{ pattern.fType }}
-                                </td>
-                                <td
-                                    class="px-4 py-4 whitespace-nowrap text-s font-medium text-gray-600 truncate"
+                                    Tipo de Función
+                                </th>
+                                <th
+                                    class="w-[15%] px-4 py-3 text-left text-s font-medium text-gray-500 tracking-wider border-r"
                                 >
-                                    {{ pattern.duration | time: "long" }}
-                                </td>
-                                <td
-                                    class="px-6 py-4 whitespace-nowrap text-s text-gray-600"
+                                    Duración
+                                </th>
+                                <th
+                                    class="w-[15%] px-4 py-3 text-left text-s font-medium text-gray-500 tracking-wider border-r"
                                 >
-                                    Inicio: {{ pattern.initValue }} - Fin:
-                                    {{ pattern.endValue }}
-                                </td>
-                                <td
-                                    class="px-6 py-4 whitespace-nowrap text-s text-gray-600"
+                                    Valor Inicial - Final
+                                </th>
+                                <th
+                                    class="w-[15%] px-4 py-3 text-left text-s font-medium text-gray-500 tracking-wider border-r"
                                 >
-                                    Mín: {{ pattern.minTolerance }} - Máx:
-                                    {{ pattern.maxTolerance }}
-                                </td>
-                                <td
-                                    class="px-6 py-4 whitespace-nowrap text-s text-gray-600 space-x-2 flex justify-end"
-                                >
-                                    <button
-                                        mat-icon-button
-                                        type="button"
-                                        color="warn"
-                                        (click)="onDeleteClick(pattern.id)"
-                                    >
-                                        <mat-icon class="text-2xl">
-                                            delete
-                                        </mat-icon>
-                                    </button>
-                                </td>
+                                    Variación Mín - Máx
+                                </th>
+                                <th
+                                    class="px-6 py-3 text-left text-s font-medium text-gray-500 tracking-wider flex justify-center"
+                                ></th>
                             </tr>
-                        }
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            @for (
+                                pattern of filteredPatterns();
+                                track pattern.id
+                            ) {
+                                <tr
+                                    class="cursor-pointer"
+                                    (click)="navigateToEditPattern(pattern.id)"
+                                >
+                                    <td
+                                        class="px-4 py-4 whitespace-nowrap text-s font-medium text-gray-600 truncate border-r border-t"
+                                    >
+                                        {{ pattern.id }}
+                                    </td>
+                                    <td
+                                        class="px-4 py-4 whitespace-nowrap text-s font-medium text-gray-600 truncate border-r border-t"
+                                    >
+                                        {{ pattern.name }}
+                                    </td>
+                                    <td
+                                        class="px-4 py-4 whitespace-nowrap text-s font-medium text-gray-600 border-r border-t"
+                                    >
+                                        {{ pattern.fType }}
+                                    </td>
+                                    <td
+                                        class="px-4 py-4 whitespace-nowrap text-s font-medium text-gray-600 truncate border-r border-t"
+                                    >
+                                        {{ pattern.duration | time: "long" }}
+                                    </td>
+                                    <td
+                                        class="px-4 py-4 whitespace-nowrap text-s text-gray-600 border-r border-t"
+                                    >
+                                        Inicio: {{ pattern.initValue }} - Fin:
+                                        {{ pattern.endValue }}
+                                    </td>
+                                    <td
+                                        class="px-4 py-4 whitespace-nowrap text-s text-gray-600 border-r border-t"
+                                    >
+                                        Mín: {{ pattern.minTolerance }} - Máx:
+                                        {{ pattern.maxTolerance }}
+                                    </td>
+                                    <td
+                                        class="px-6 py-4 whitespace-nowrap text-s text-gray-600 space-x-2 flex justify-center border-t"
+                                    >
+                                        <button
+                                            mat-icon-button
+                                            type="button"
+                                            color="warn"
+                                            [disabled]="
+                                                isPatternInUse(pattern.id)
+                                            "
+                                            (click)="
+                                                onDeleteClick(
+                                                    pattern.id,
+                                                    $event
+                                                )
+                                            "
+                                            [matTooltip]="
+                                                isPatternInUse(pattern.id)
+                                                    ? 'No se puede eliminar: el patrón está siendo usado en una simulación'
+                                                    : 'Eliminar patrón'
+                                            "
+                                        >
+                                            <mat-icon
+                                                class="text-2xl"
+                                                [class.text-gray-400]="
+                                                    isPatternInUse(pattern.id)
+                                                "
+                                            >
+                                                delete
+                                            </mat-icon>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -185,6 +209,36 @@
                     (click)="deletePattern()"
                 >
                     Eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@if (showDataImportedDialog()) {
+    <div
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    >
+        <div class="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full">
+            <h2 class="text-lg font-semibold text-gray-800">
+                Confirmar eliminación
+            </h2>
+            <p class="mt-4 text-sm text-gray-600">
+                ¿Quieres añadir los patrones importados a la lista actual o
+                deseas reemplazarlos? Esta acción no se puede deshacer.
+            </p>
+            <div class="mt-6 flex justify-end space-x-4">
+                <button
+                    class="px-4 py-2 text-base font-medium text-gray-600 hover:text-gray-800"
+                    (click)="appendImportedData(); closeImportDialog()"
+                >
+                    Añadir
+                </button>
+                <button
+                    class="px-4 py-2 text-base font-medium text-white bg-red-500 hover:bg-red-600 rounded"
+                    (click)="replaceWithImportedData(); closeImportDialog()"
+                >
+                    Reemplazar lista actual
                 </button>
             </div>
         </div>

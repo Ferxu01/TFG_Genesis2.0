@@ -21,7 +21,7 @@ export class PatternOfflineService {
             id: crypto.randomUUID(),
         };
 
-        this._patterns.update((patterns) => [...patterns, newPattern]);
+        this.addPatterns([...this._patterns(), newPattern]);
         return newPattern;
     }
 
@@ -37,7 +37,7 @@ export class PatternOfflineService {
         );
     }
 
-    addPatterns(patterns: any): void {
-        this._patterns.update((current) => [...current, ...patterns]);
+    addPatterns(patterns: Pattern[]): void {
+        this._patterns.set(patterns);
     }
 }
