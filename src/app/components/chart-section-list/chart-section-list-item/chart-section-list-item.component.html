@@ -9,6 +9,8 @@
             {{ currentSection().pattern.name }} -
             {{ currentSection().pattern.duration | time: "long" }} -
             {{ currentSection().pattern.fType }}
+            / Inicio: {{ currentSection().pattern.initValue }} - Fin:
+            {{ currentSection().pattern.endValue }}
         </span>
     </div>
 
