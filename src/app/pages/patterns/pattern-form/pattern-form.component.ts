@@ -6,6 +6,7 @@ import {
     OnInit,
     signal,
 } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import {
     FormControl,
     FormGroup,
@@ -24,6 +25,7 @@ import { Nullable } from 'app/models/Nullable.model';
 import { Pattern } from 'app/models/Pattern.model';
 import { PatternFormModel } from 'app/models/forms.model';
 import { PatternOfflineService } from 'app/services/offline/pattern-offline.service';
+import { patternParametersImageInfo } from './pattern-form.config';
 
 /**
  * Component responsible for creating and editing Pattern records.
@@ -51,12 +53,6 @@ export class PatternFormComponent implements OnInit {
     private readonly router = inject(Router);
     private readonly patternOfflineService = inject(PatternOfflineService);
     private readonly notificationService = inject(NotificationService);
-
-    private readonly patternId = signal<Nullable<Pattern['id']>>(null);
-
-    protected readonly isEditMode = computed(() => !!this.patternId());
-    protected readonly isLoading = signal(false);
-    protected readonly isSubmitting = signal(false);
 
     protected readonly patternForm = new FormGroup<PatternFormModel>({
         name: new FormControl('', {
@@ -87,6 +83,22 @@ export class PatternFormComponent implements OnInit {
             nonNullable: true,
             validators: [Validators.required, Validators.min(0)],
         }),
+    });
+
+    private readonly functionTypeSignal = toSignal(
+        this.patternForm.controls.fType.valueChanges,
+        { initialValue: this.patternForm.controls.fType.value },
+    );
+
+    private readonly patternId = signal<Nullable<Pattern['id']>>(null);
+
+    protected readonly isEditMode = computed(() => !!this.patternId());
+    protected readonly isLoading = signal(false);
+    protected readonly isSubmitting = signal(false);
+
+    protected readonly previewImage = computed(() => {
+        const type = this.functionTypeSignal();
+        return patternParametersImageInfo[type];
     });
 
     ngOnInit(): void {

@@ -5,42 +5,41 @@
         </div>
     } @else {
         <div class="flex-auto p-5 sm:px-10">
-            <div class="max-h-400 rounded-2xl w-3/3">
-                <!-- Título dinámico -->
-                <h2 class="text-2xl font-bold mb-6">
-                    {{ isEditMode() ? "Editar Patrón" : "Crear Patrón" }}
-                </h2>
-                <form
-                    class="flex flex-col px-8 py-6 pb-0 bg-card rounded-2xl shadow overflow-hidden"
-                    [formGroup]="patternForm"
-                    (ngSubmit)="handleFormSubmit()"
-                >
-                    <div class="flex gap-4 border-b mb-4">
-                        <div class="flex flex-col w-1/2">
-                            <!-- Nombre -->
-                            <div class="flex flex-col">
-                                <mat-label class="block mb-1">Nombre</mat-label>
+            <div
+                class="flex flex-col lg:flex-row gap-8 rounded-2xl w-full bg-card shadow overflow-hidden"
+            >
+                <div class="flex flex-col flex-auto p-8 lg:w-3/5">
+                    <h2 class="text-2xl font-bold mb-6">
+                        {{ isEditMode() ? "Editar Patrón" : "Crear Patrón" }}
+                    </h2>
+
+                    <form
+                        class="flex flex-col"
+                        [formGroup]="patternForm"
+                        (ngSubmit)="handleFormSubmit()"
+                    >
+                        <div
+                            class="grid grid-cols-1 md:grid-cols-2 gap-4 border-b pb-6 mb-4"
+                        >
+                            <div class="col-span-full">
+                                <mat-label class="block mb-1 font-medium">
+                                    Nombre
+                                </mat-label>
                                 <mat-form-field class="w-full">
                                     <input
                                         matInput
                                         formControlName="name"
-                                        class="p-0"
                                         placeholder="Introduce un nombre descriptivo para el patrón"
                                     />
                                 </mat-form-field>
                             </div>
-                        </div>
-                        <div class="flex w-1/2">
-                            <!-- Tipo de Función -->
-                            <div class="flex flex-col w-1/2 mr-2">
-                                <mat-label class="block mb-1"
-                                    >Tipo de Función</mat-label
-                                >
+
+                            <div>
+                                <mat-label class="block mb-1 font-medium">
+                                    Tipo de Función
+                                </mat-label>
                                 <mat-form-field class="w-full">
-                                    <mat-select
-                                        formControlName="fType"
-                                        (selectionChange)="(null)"
-                                    >
+                                    <mat-select formControlName="fType">
                                         <mat-option value="linear">
                                             Lineal
                                         </mat-option>
@@ -54,8 +53,8 @@
                                 </mat-form-field>
                             </div>
 
-                            <div class="flex flex-col w-1/2">
-                                <mat-label class="block mb-1">
+                            <div>
+                                <mat-label class="block mb-1 font-medium">
                                     Duración (segundos)
                                 </mat-label>
                                 <mat-form-field class="w-full">
@@ -68,18 +67,13 @@
                                     />
                                 </mat-form-field>
                             </div>
-                        </div>
-                    </div>
 
-                    <div class="flex">
-                        <div class="flex flex-col w-1/2 mr-4">
-                            <mat-label class="block mb-1">
-                                Rango de valores entre los que generar
-                            </mat-label>
-                            <!-- Contenedor de los campos Mínimo y Máximo -->
-                            <div class="flex">
-                                <div class="w-1/2 mr-2">
-                                    <mat-form-field class="w-full">
+                            <div class="col-span-full">
+                                <mat-label class="block mb-1 font-medium">
+                                    Rango de valores entre los que generar
+                                </mat-label>
+                                <div class="flex gap-2">
+                                    <mat-form-field class="w-1/2">
                                         <input
                                             matInput
                                             type="number"
@@ -88,9 +82,7 @@
                                             min="0"
                                         />
                                     </mat-form-field>
-                                </div>
-                                <div class="w-1/2">
-                                    <mat-form-field class="w-full">
+                                    <mat-form-field class="w-1/2">
                                         <input
                                             matInput
                                             type="number"
@@ -101,70 +93,76 @@
                                     </mat-form-field>
                                 </div>
                             </div>
-                        </div>
 
-                        <div class="flex flex-col w-1/2">
-                            <mat-label class="block mb-1">
-                                Variación mínima y máxima
-                            </mat-label>
-                            <!-- Contenedor de los campos Mínimo y Máximo -->
-                            <div class="flex">
-                                <!-- Campo Mínimo -->
-                                <div class="w-1/2 mr-2">
-                                    <mat-form-field class="w-full">
+                            <div class="col-span-full">
+                                <mat-label class="block mb-1 font-medium">
+                                    Variación/Error inferior y superior
+                                </mat-label>
+                                <div class="flex gap-2">
+                                    <mat-form-field class="w-1/2">
                                         <input
                                             matInput
                                             type="number"
                                             formControlName="minTolerance"
-                                            placeholder="Mín"
-                                            min="0"
+                                            placeholder="Variación inferior"
                                         />
                                     </mat-form-field>
-                                </div>
-                                <!-- Campo Máximo -->
-                                <div class="w-1/2">
-                                    <mat-form-field class="w-full">
+                                    <mat-form-field class="w-1/2">
                                         <input
                                             matInput
                                             type="number"
                                             formControlName="maxTolerance"
-                                            placeholder="Máx"
+                                            placeholder="Variación superior"
                                             min="0"
                                         />
                                     </mat-form-field>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Botones de acción -->
-                    <div
-                        class="flex items-center justify-end border-t -mx-8 mt-4 px-8 py-5 bg-gray-50 dark:bg-gray-700 rounded-b-lg"
-                    >
-                        <button
-                            mat-button
-                            type="button"
-                            (click)="navigateToPatternsList()"
-                        >
-                            Cancelar
-                        </button>
-                        <button
-                            class="px-6 ml-3 text-white"
-                            mat-flat-button
-                            color="primary"
-                            [disabled]="isSubmitting() || patternForm.invalid"
-                            type="submit"
-                        >
-                            @if (isSubmitting()) {
+                        <div class="flex items-center justify-end pt-4">
+                            <button
+                                mat-button
+                                type="button"
+                                (click)="navigateToPatternsList()"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                class="px-6 ml-3 text-white"
+                                mat-flat-button
+                                color="primary"
+                                [disabled]="
+                                    isSubmitting() || patternForm.invalid
+                                "
+                                type="submit"
+                            >
                                 {{
-                                    isEditMode() ? "Editando..." : "Creando..."
+                                    isSubmitting()
+                                        ? isEditMode()
+                                            ? "Editando..."
+                                            : "Creando..."
+                                        : isEditMode()
+                                          ? "Guardar"
+                                          : "Crear"
                                 }}
-                            } @else {
-                                {{ isEditMode() ? "Guardar" : "Crear" }}
-                            }
-                        </button>
-                    </div>
-                </form>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div
+                    class="hidden lg:flex w-2/5 items-center justify-center relative overflow-hidden"
+                >
+                    <img
+                        class="absolute inset-0 w-full h-full object-contain"
+                        [src]="previewImage()"
+                        alt="Información sobre funcionamiento de parámetros de patrón"
+                    />
+                    <div
+                        class="absolute inset-0 bg-black bg-opacity-10 pointer-events-none"
+                    ></div>
+                </div>
             </div>
         </div>
     }
