@@ -16,6 +16,8 @@ function createWindow() {
         height: 600,
         title: "Genesis 2.0",
     });
+    win.maximize();
+    win.show();
 
     // Cargar el código generado en producción en la ventana generada
     win.loadFile(path.join(__dirname, "dist/fuse/index.html"));
