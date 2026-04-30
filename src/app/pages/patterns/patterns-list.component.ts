@@ -129,13 +129,10 @@ export class PatternsListComponent {
         const pendingData = this.pendingImportData();
         if (!pendingData) return;
 
-        const currentPatterns = this.patterns();
-        const combinedPatterns = [
-            ...currentPatterns,
-            ...(Array.isArray(pendingData) ? pendingData : [pendingData]),
-        ];
-
-        this.patternOfflineService.addPatterns(combinedPatterns);
+        const patternsToAdd = Array.isArray(pendingData)
+            ? pendingData
+            : [pendingData];
+        this.patternOfflineService.appendPatterns(patternsToAdd);
 
         this.notificationService.success(
             'Patrones añadidos a la lista existente',
@@ -151,6 +148,7 @@ export class PatternsListComponent {
             ? pendingData
             : [pendingData];
         this.patternOfflineService.addPatterns(patternsToSet);
+
         this.notificationService.success(
             'Lista de patrones reemplazada correctamente',
         );
