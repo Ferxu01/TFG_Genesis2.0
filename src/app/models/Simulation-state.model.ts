@@ -1,4 +1,4 @@
-import { SensorEntity } from 'app/models/Sensor.model';
+import { SensorsEntity } from 'app/models/Sensor.model';
 import { SimulationEntity } from 'app/models/Simulation.model';
 
 type SimulationParameters = SimulationEntity['parameters'];
@@ -7,7 +7,7 @@ export type SimulationBatch = SimulationRecords;
 
 export interface GenerationContext {
     readonly simulation: SimulationEntity;
-    readonly sensor: SensorEntity;
+    readonly sensors: SensorsEntity;
     readonly parameters: SimulationParameters;
     readonly state: SimulationGenerationState;
 }
@@ -30,6 +30,6 @@ export interface SimulationGenerationState {
 
 export interface SimulationState extends SimulationProgress {
     simulation: SimulationEntity;
-    sensor: SensorEntity;
+    sensors: SensorsEntity;
     records: SimulationRecords;
 }

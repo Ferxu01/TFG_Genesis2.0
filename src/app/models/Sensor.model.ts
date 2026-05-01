@@ -8,14 +8,6 @@ export interface Coordinate {
     dev_addr: string;
 }
 
-export interface SensorEntity {
-    id: number | string;
-    name: string;
-    coordinates: Coordinate[];
-}
+export type SensorsEntity = Coordinate[];
 
-type BaseSensorRequest = Pick<SensorEntity, 'name' | 'coordinates'>;
-
-export type SensorCreateRequest = BaseSensorRequest;
-
-export type SensorEditRequest = BaseSensorRequest & { id: SensorEntity['id'] };
+export type SensorCreateRequest = SensorsEntity;

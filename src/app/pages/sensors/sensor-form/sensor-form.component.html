@@ -18,7 +18,7 @@
                             label="Exportar sensores"
                             title="Exportar sensores"
                             [disabled]="!isSensorDataImported()"
-                            [data]="sensorForm.value"
+                            [data]="coordinates.getRawValue()"
                         />
 
                         <div class="relative mx-4">
@@ -53,166 +53,146 @@
                 </div>
             </div>
 
-            <form [formGroup]="sensorForm" class="flex flex-col rounded-2xl">
-                <!-- <div class="flex flex-col gt-xs:flex-row mb-4">
-                    <mat-label class="block mb-2">Nombre</mat-label>
-                    <mat-form-field class="flex-auto gt-xs:pr-3">
-                        <input matInput formControlName="name" />
-                    </mat-form-field>
-                </div> -->
-
-                <!-- Localizaciones de Sensores -->
+            <!-- Localizaciones de Sensores -->
+            <div class="flex flex-col w-full space-y-4">
                 <div
-                    class="flex flex-col w-full space-y-4"
-                    formArrayName="coordinates"
+                    class="overflow-x-auto bg-white rounded-lg border border-gray-200"
                 >
-                    <div
-                        class="overflow-x-auto bg-white rounded-lg border border-gray-200"
-                    >
-                        <table class="w-full table-auto bg-transparent">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th
-                                        class="px-4 py-3 text-left text-s font-medium text-gray-500 tracking-wider border-r"
+                    <table class="w-full table-auto bg-transparent">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th
+                                    class="px-4 py-3 text-left text-s font-medium text-gray-500 tracking-wider border-r"
+                                >
+                                    Latitud
+                                </th>
+                                <th
+                                    class="px-4 py-3 text-left text-s font-medium text-gray-500 tracking-wider border-r"
+                                >
+                                    Longitud
+                                </th>
+                                <th
+                                    class="px-4 py-3 text-left text-s font-medium text-gray-500 tracking-wider border-r"
+                                >
+                                    Cota
+                                </th>
+                                <th
+                                    class="px-4 py-3 text-left text-s font-medium text-gray-500 tracking-wider border-r"
+                                >
+                                    Alias
+                                </th>
+                                <th
+                                    class="px-4 py-3 text-left text-s font-medium text-gray-500 tracking-wider border-r"
+                                >
+                                    Dev_eui
+                                </th>
+                                <th
+                                    class="px-4 py-3 text-left text-s font-medium text-gray-500 tracking-wider border-r"
+                                >
+                                    Join_eui
+                                </th>
+                                <th
+                                    class="px-4 py-3 text-left text-s font-medium text-gray-500 tracking-wider border-r"
+                                >
+                                    Dev_addr
+                                </th>
+                                <th
+                                    class="px-6 py-3 text-left text-s font-medium text-gray-500 tracking-wider flex justify-center"
+                                ></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (sensor of filteredSensors(); track sensor) {
+                                <tr [formGroup]="sensor">
+                                    <td class="px-4 py-2 border-r border-t">
+                                        <input
+                                            matInput
+                                            formControlName="lat"
+                                            class="w-full px-2 py-1"
+                                            type="number"
+                                            placeholder="Latitud"
+                                        />
+                                    </td>
+                                    <td
+                                        class="px-4 py-4 whitespace-nowrap text-s font-medium text-gray-600 border-r border-t"
                                     >
-                                        Latitud
-                                    </th>
-                                    <th
-                                        class="px-4 py-3 text-left text-s font-medium text-gray-500 tracking-wider border-r"
+                                        <input
+                                            matInput
+                                            formControlName="long"
+                                            class="w-full px-2 py-1"
+                                            type="number"
+                                            placeholder="Longitud"
+                                        />
+                                    </td>
+                                    <td
+                                        class="px-4 py-4 whitespace-nowrap text-s font-medium text-gray-600 border-r border-t"
                                     >
-                                        Longitud
-                                    </th>
-                                    <th
-                                        class="px-4 py-3 text-left text-s font-medium text-gray-500 tracking-wider border-r"
+                                        <input
+                                            matInput
+                                            formControlName="height"
+                                            class="w-full px-2 py-1"
+                                            type="number"
+                                            placeholder="Cota"
+                                        />
+                                    </td>
+                                    <td
+                                        class="px-4 py-4 whitespace-nowrap text-s font-medium text-gray-600 border-r border-t"
                                     >
-                                        Cota
-                                    </th>
-                                    <th
-                                        class="px-4 py-3 text-left text-s font-medium text-gray-500 tracking-wider border-r"
+                                        <input
+                                            matInput
+                                            formControlName="alias"
+                                            class="w-full px-2 py-1"
+                                            placeholder="Alias"
+                                        />
+                                    </td>
+                                    <td
+                                        class="px-4 py-4 whitespace-nowrap text-s text-gray-600 border-r border-t"
                                     >
-                                        Alias
-                                    </th>
-                                    <th
-                                        class="px-4 py-3 text-left text-s font-medium text-gray-500 tracking-wider border-r"
+                                        <input
+                                            matInput
+                                            formControlName="dev_eui"
+                                            class="w-full px-2 py-1"
+                                            placeholder="Dev_eui"
+                                        />
+                                    </td>
+                                    <td
+                                        class="px-4 py-4 whitespace-nowrap text-s text-gray-600 border-r border-t"
                                     >
-                                        Dev_eui
-                                    </th>
-                                    <th
-                                        class="px-4 py-3 text-left text-s font-medium text-gray-500 tracking-wider border-r"
+                                        <input
+                                            matInput
+                                            formControlName="join_eui"
+                                            class="w-full px-2 py-1"
+                                            placeholder="Join_eui"
+                                        />
+                                    </td>
+                                    <td
+                                        class="px-4 py-4 whitespace-nowrap text-s text-gray-600 border-r border-t"
                                     >
-                                        Join_eui
-                                    </th>
-                                    <th
-                                        class="px-4 py-3 text-left text-s font-medium text-gray-500 tracking-wider border-r"
+                                        <input
+                                            matInput
+                                            formControlName="dev_addr"
+                                            class="w-full px-2 py-1"
+                                            placeholder="Dev_addr"
+                                        />
+                                    </td>
+                                    <td
+                                        class="px-6 py-4 whitespace-nowrap text-s text-gray-600 space-x-2 flex justify-center border-t"
                                     >
-                                        Dev_addr
-                                    </th>
-                                    <th
-                                        class="px-6 py-3 text-left text-s font-medium text-gray-500 tracking-wider flex justify-center"
-                                    ></th>
+                                        <button
+                                            mat-icon-button
+                                            type="button"
+                                            color="warn"
+                                            (click)="removeSensor(sensor)"
+                                        >
+                                            <mat-icon>delete</mat-icon>
+                                        </button>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                @for (
-                                    sensor of filteredSensors();
-                                    track sensor
-                                ) {
-                                    <tr [formGroup]="sensor">
-                                        <!-- <td
-                                            class="px-4 py-4 whitespace-nowrap text-s font-medium text-gray-600"
-                                        > -->
-                                        <td class="px-4 py-2 border-r border-t">
-                                            <input
-                                                matInput
-                                                formControlName="lat"
-                                                class="w-full px-2 py-1"
-                                                type="number"
-                                                placeholder="Latitud"
-                                            />
-                                        </td>
-                                        <td
-                                            class="px-4 py-4 whitespace-nowrap text-s font-medium text-gray-600 border-r border-t"
-                                        >
-                                            <input
-                                                matInput
-                                                formControlName="long"
-                                                class="w-full px-2 py-1"
-                                                type="number"
-                                                placeholder="Longitud"
-                                            />
-                                        </td>
-                                        <td
-                                            class="px-4 py-4 whitespace-nowrap text-s font-medium text-gray-600 border-r border-t"
-                                        >
-                                            <input
-                                                matInput
-                                                formControlName="height"
-                                                class="w-full px-2 py-1"
-                                                type="number"
-                                                placeholder="Cota"
-                                            />
-                                        </td>
-                                        <td
-                                            class="px-4 py-4 whitespace-nowrap text-s font-medium text-gray-600 border-r border-t"
-                                        >
-                                            <input
-                                                matInput
-                                                formControlName="alias"
-                                                class="w-full px-2 py-1"
-                                                placeholder="Alias"
-                                            />
-                                        </td>
-                                        <td
-                                            class="px-4 py-4 whitespace-nowrap text-s text-gray-600 border-r border-t"
-                                        >
-                                            <input
-                                                matInput
-                                                formControlName="dev_eui"
-                                                class="w-full px-2 py-1"
-                                                placeholder="Dev_eui"
-                                            />
-                                        </td>
-                                        <td
-                                            class="px-4 py-4 whitespace-nowrap text-s text-gray-600 border-r border-t"
-                                        >
-                                            <input
-                                                matInput
-                                                formControlName="join_eui"
-                                                class="w-full px-2 py-1"
-                                                placeholder="Join_eui"
-                                            />
-                                        </td>
-                                        <td
-                                            class="px-4 py-4 whitespace-nowrap text-s text-gray-600 border-r border-t"
-                                        >
-                                            <input
-                                                matInput
-                                                formControlName="dev_addr"
-                                                class="w-full px-2 py-1"
-                                                placeholder="Dev_addr"
-                                            />
-                                        </td>
-                                        <td
-                                            class="px-6 py-4 whitespace-nowrap text-s text-gray-600 space-x-2 flex justify-center border-t"
-                                        >
-                                            <button
-                                                mat-icon-button
-                                                type="button"
-                                                color="warn"
-                                                (click)="
-                                                    removeCoordinate(sensor)
-                                                "
-                                            >
-                                                <mat-icon>delete</mat-icon>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
+                            }
+                        </tbody>
+                    </table>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>

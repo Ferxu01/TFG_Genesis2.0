@@ -93,7 +93,7 @@
                                         <mat-error class="text-md">
                                             El número de registros por instante
                                             no puede superar las
-                                            {{ sensor()?.coordinates?.length }}
+                                            {{ sensors()?.length }}
                                             coordenadas de sensores disponibles
                                             cuando el modo "No repetir" está
                                             activo.
@@ -440,8 +440,7 @@
                                 matTooltipPosition="above"
                                 (click)="initInstantSimulation()"
                                 [disabled]="
-                                    simulationForm.invalid ||
-                                    !sensor()?.coordinates?.length
+                                    simulationForm.invalid || !sensors()?.length
                                 "
                             >
                                 Iniciar simulación

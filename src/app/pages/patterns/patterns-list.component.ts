@@ -13,7 +13,7 @@ import { Router, RouterModule } from '@angular/router';
 import { ExportDataButtonComponent } from 'app/components/export-data-button/export-data-button.component';
 import { ImportDataButtonComponent } from 'app/components/import-data-button/import-data-button.component';
 import { NotificationService } from 'app/core/services/notification.service';
-import { Pattern } from 'app/models/Pattern.model';
+import { functionTypes, Pattern } from 'app/models/Pattern.model';
 import { TimePipe } from 'app/pipes/time.pipe';
 import { PatternOfflineService } from 'app/services/offline/pattern-offline.service';
 import { SimulationOfflineService } from 'app/services/offline/simulation-offline.service';
@@ -111,12 +111,16 @@ export class PatternsListComponent {
      * @param data The raw data object received from the import process.
      */
     protected handleDataImport(data: unknown): void {
+        if (!this.isValidPatternData(data)) {
+            return this.notificationService.error(
+                'Formato no válido. Asegúrese de que todos los patrones tengan el formato correcto.',
+            );
+        }
         this.pendingImportData.set(data);
 
         if (!this.patterns().length) return this.executeDirectImport(data);
 
         this.showDataImportedDialog.set(true);
-        // this.patternOfflineService.addPatterns(data);
     }
 
     private executeDirectImport(data: any): void {
@@ -157,5 +161,39 @@ export class PatternsListComponent {
     protected closeImportDialog(): void {
         this.pendingImportData.set(null);
         this.showDataImportedDialog.set(false);
+    }
+
+    /**
+     * Validate imported data to ensure it matches the expected structure for patterns.
+     * Each pattern should have a name, function type, duration, initial and end values, and tolerances. The ID is optional (if not provided, it will be generated).
+     * @param data The raw data to validate, which can be an object or an array of objects.
+     * @returns True if the data is valid for import as patterns, false otherwise.
+     */
+    private isValidPatternData(data: any): boolean {
+        if (!data || typeof data !== 'object') return false;
+
+        const items = Array.isArray(data) ? data : [data];
+        if (items.length === 0) return false;
+
+        // const validFunctionTypes = ['linear', 'curve', 'parabolic'];
+
+        return items.every((item) => {
+            return (
+                item &&
+                typeof item === 'object' &&
+                // Validación de ID: Si existe, debe ser string. Si no, es válido (se generará luego).
+                (item.id === undefined ||
+                    (typeof item.id === 'string' && item.id.trim() !== '')) &&
+                // Resto de campos obligatorios
+                typeof item.name === 'string' &&
+                item.name.trim() !== '' &&
+                functionTypes.includes(item.fType) &&
+                typeof item.duration === 'number' &&
+                typeof item.initValue === 'number' &&
+                typeof item.endValue === 'number' &&
+                typeof item.minTolerance === 'number' &&
+                typeof item.maxTolerance === 'number'
+            );
+        });
     }
 }

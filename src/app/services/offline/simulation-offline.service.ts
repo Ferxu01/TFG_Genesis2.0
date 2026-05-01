@@ -1,5 +1,4 @@
 import { computed, Injectable, signal } from '@angular/core';
-import { SensorEntity } from 'app/models/Sensor.model';
 import { SimulationEntity } from 'app/models/Simulation.model';
 
 /**
@@ -50,15 +49,5 @@ export class SimulationOfflineService {
         };
 
         this.loadedSimulation.set(newSimulation);
-    }
-
-    attachSensorToSimulation(sensorId: SensorEntity['id']): void {
-        const simulation = this.loadedSimulation();
-        if (!simulation) return;
-
-        this.loadedSimulation.set({
-            ...simulation,
-            sensorId,
-        });
     }
 }

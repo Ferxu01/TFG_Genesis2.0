@@ -1,10 +1,8 @@
 import { FormArray, FormControl, FormGroup } from '@angular/forms';
 import { FunctionType } from './Pattern.model';
-import { SensorEntity } from './Sensor.model';
 
 export interface SimulationFormModel {
     name: FormControl<string>;
-    sensorId: FormControl<SensorEntity['id']>;
     timestampIni: FormControl<number | null>;
     timestampEnd: FormControl<number | null>;
     timeStep: FormControl<number>;
@@ -18,12 +16,7 @@ export interface SimulationFormModel {
     date: FormControl<string>;
 }
 
-export interface SensorForm {
-    name: FormControl<string>;
-    coordinates: FormArray<FormGroup<CoordinateForm>>;
-}
-
-export interface CoordinateForm {
+export interface SensorCoordinateForm {
     lat: FormControl<string>;
     long: FormControl<string>;
     height: FormControl<string>;

@@ -1,9 +1,7 @@
 import { Section } from './Section.model';
-import { SensorEntity } from './Sensor.model';
 
 interface BaseSimulation {
     name: string;
-    sensorId?: SensorEntity['id'];
     parameters: string;
     minRecordsPerInstant: number;
     maxRecordsPerInstant: number;

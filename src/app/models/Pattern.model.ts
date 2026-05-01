@@ -1,4 +1,4 @@
-const functionTypes = ['linear', 'curve', 'parabolic'] as const;
+export const functionTypes = ['linear', 'curve', 'parabolic'] as const;
 export type FunctionType = (typeof functionTypes)[number];
 
 export interface Pattern {

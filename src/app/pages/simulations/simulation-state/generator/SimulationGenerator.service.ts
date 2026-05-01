@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { SensorEntity } from 'app/models/Sensor.model';
+import { SensorsEntity } from 'app/models/Sensor.model';
 import {
     GenerationContext,
     SimulationGenerationState,
@@ -98,7 +98,7 @@ export class SimulationGeneratorService {
 
     private createContext(
         simulation: SimulationEntity,
-        sensors: SensorEntity,
+        sensors: SensorsEntity,
     ): GenerationContext {
         return {
             simulation: {

@@ -25,16 +25,14 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { RouterModule } from '@angular/router';
 import { ExportDataButtonComponent } from 'app/components/export-data-button/export-data-button.component';
 import { ImportDataButtonComponent } from 'app/components/import-data-button/import-data-button.component';
 import { NotificationService } from 'app/core/services/notification.service';
-import { CoordinateForm, SensorForm } from 'app/models/forms.model';
+import { SensorCoordinateForm } from 'app/models/forms.model';
 import {
     Coordinate,
     SensorCreateRequest,
-    SensorEditRequest,
+    SensorsEntity,
 } from 'app/models/Sensor.model';
 import { SensorOfflineService } from 'app/services/offline/sensor-offline.service';
 import { startWith } from 'rxjs';
@@ -54,11 +52,9 @@ import { startWith } from 'rxjs';
         MatFormFieldModule,
         MatInputModule,
         MatIconModule,
-        MatSelectModule,
         MatButtonToggleModule,
         FormsModule,
         ReactiveFormsModule,
-        RouterModule,
         A11yModule,
         ImportDataButtonComponent,
         ExportDataButtonComponent,
@@ -69,20 +65,14 @@ export class SensorFormComponent implements OnDestroy {
     private readonly sensorOfflineService = inject(SensorOfflineService);
     private readonly _cdr = inject(ChangeDetectorRef);
 
-    protected readonly sensorForm = new FormGroup<SensorForm>({
-        name: new FormControl('', {
-            nonNullable: true,
-            validators: [Validators.required],
-        }),
-        coordinates: new FormArray<FormGroup<CoordinateForm>>([], {
-            validators: [Validators.required, Validators.minLength(1)],
-        }),
+    protected readonly coordinates = new FormArray<
+        FormGroup<SensorCoordinateForm>
+    >([], {
+        validators: [Validators.required, Validators.minLength(1)],
     });
 
-    private readonly sensorId = computed(() => this.sensorData()?.id ?? null);
-
     // Pending data imported from the import dialog, waiting for user confirmation on how to integrate it with the existing patterns.
-    private readonly pendingImportData = signal<any>(null);
+    private readonly pendingImportData = signal<SensorsEntity>([]);
 
     // Watch for changes in the coordinates form array to trigger re-evaluation of filteredSensors
     private readonly coordinatesSignal = toSignal(
@@ -113,7 +103,7 @@ export class SensorFormComponent implements OnDestroy {
     protected readonly showDataImportedDialog = signal(false);
 
     protected readonly sensorData = computed(() =>
-        this.sensorOfflineService.getLoadedSensor(),
+        this.sensorOfflineService.getLoadedSensors(),
     );
     protected readonly isSensorDataImported = computed(
         () => !!this.sensorData(),
@@ -134,10 +124,6 @@ export class SensorFormComponent implements OnDestroy {
         });
     }
 
-    protected get coordinates(): FormArray {
-        return this.sensorForm.get('coordinates') as FormArray;
-    }
-
     /**
      * Adds a new coordinate group to the form array.
      * @param coord Optional data to populate the new coordinate group.
@@ -146,8 +132,10 @@ export class SensorFormComponent implements OnDestroy {
         this.coordinates.push(this.buildCoordinateGroup(coord));
     }
 
-    protected removeCoordinate(control: AbstractControl): void {
-        const index = this.coordinates.controls.indexOf(control);
+    protected removeSensor(control: AbstractControl): void {
+        const index = this.coordinates.controls.indexOf(
+            control as FormGroup<SensorCoordinateForm>,
+        );
         if (index === -1) return;
         this.coordinates.removeAt(index);
     }
@@ -158,8 +146,8 @@ export class SensorFormComponent implements OnDestroy {
     }
 
     private saveSensorData(): void {
-        const payload = this.assemblePayload() as SensorEditRequest;
-        this.sensorOfflineService.updateSensor(payload);
+        const payload = this.assemblePayload() as SensorCreateRequest;
+        this.sensorOfflineService.loadSensors(payload);
 
         this.notificationService.success(
             'Datos de los sensores actualizados correctamente',
@@ -170,9 +158,8 @@ export class SensorFormComponent implements OnDestroy {
      * Maps form values into a payload structure compatible with API/Service requests.
      * @returns A structured request object for creation or editing.
      */
-    private assemblePayload(): SensorCreateRequest | SensorEditRequest {
-        const { name, coordinates } = this.sensorForm.getRawValue();
-        const mappedCoordinates = coordinates.map((coordinate) => ({
+    private assemblePayload(): SensorCreateRequest {
+        return this.coordinates.getRawValue().map((coordinate) => ({
             lat: Number(coordinate.lat),
             long: Number(coordinate.long),
             height: Number(coordinate.height),
@@ -181,52 +168,41 @@ export class SensorFormComponent implements OnDestroy {
             join_eui: coordinate.join_eui,
             dev_addr: coordinate.dev_addr,
         }));
-
-        const payload = {
-            name,
-            coordinates: mappedCoordinates,
-        };
-
-        if (!this.sensorId()) return payload;
-
-        return {
-            ...payload,
-            id: this.sensorId(),
-        };
     }
 
-    protected handleDataImport(data: unknown): void {
-        this.pendingImportData.set(data);
-        const notExistingCoordinates = !!this.coordinates.length;
+    protected handleDataImport(data: SensorsEntity): void {
+        if (!this.isValidSensorData(data)) {
+            return this.notificationService.error(
+                'Formato no válido. Asegúrese de que todos los sensores tengan el formato correcto.',
+            );
+        }
 
-        if (!notExistingCoordinates) return this.executeDirectImport();
+        this.pendingImportData.set(data);
+        const existingCoordinates = !!this.coordinates.length;
+
+        if (!existingCoordinates) return this.executeDirectImport();
 
         this.showDataImportedDialog.set(true);
     }
 
     protected appendImportedData(): void {
-        const pendingData = this.pendingImportData();
-        if (!pendingData || !pendingData.coordinates.length) return;
+        const pendingSensorsData = this.pendingImportData();
+        if (!pendingSensorsData.length) return;
 
-        const currentData = this.sensorOfflineService.getLoadedSensor();
+        const currentSensorsData = this.sensorOfflineService.getLoadedSensors();
         const updatedCoordinates = [
-            ...(currentData?.coordinates ?? []),
-            ...pendingData.coordinates,
+            ...(currentSensorsData ?? []),
+            ...pendingSensorsData,
         ];
-        const updatedSensorData = {
-            ...currentData,
-            name: currentData?.name || pendingData.name || '',
-            coordinates: updatedCoordinates,
-        };
 
-        this.sensorOfflineService.loadSensor(updatedSensorData);
+        this.sensorOfflineService.loadSensors(updatedCoordinates);
         this.populateFormFromImport();
         this.notificationService.success('Sensores añadidos a la lista actual');
     }
 
     protected replaceWithImportedData(): void {
         const pendingData = this.pendingImportData();
-        this.sensorOfflineService.loadSensor(pendingData);
+        this.sensorOfflineService.loadSensors(pendingData);
         this.populateFormFromImport();
         this.notificationService.success(
             'Lista de sensores reemplazada correctamente',
@@ -234,7 +210,7 @@ export class SensorFormComponent implements OnDestroy {
     }
 
     protected closeImportDialog(): void {
-        this.pendingImportData.set(null);
+        this.pendingImportData.set([]);
         this.showDataImportedDialog.set(false);
     }
 
@@ -242,7 +218,7 @@ export class SensorFormComponent implements OnDestroy {
         const pendingData = this.pendingImportData();
         if (!pendingData) return;
 
-        this.sensorOfflineService.loadSensor(pendingData);
+        this.sensorOfflineService.loadSensors(pendingData);
         this.populateFormFromImport();
         this.notificationService.success(
             'Datos de los sensores cargados correctamente',
@@ -251,8 +227,8 @@ export class SensorFormComponent implements OnDestroy {
 
     private buildCoordinateGroup(
         coordinate: any = null,
-    ): FormGroup<CoordinateForm> {
-        return new FormGroup<CoordinateForm>({
+    ): FormGroup<SensorCoordinateForm> {
+        return new FormGroup<SensorCoordinateForm>({
             lat: new FormControl(coordinate?.lat ?? '', {
                 nonNullable: true,
                 validators: [Validators.required],
@@ -289,26 +265,53 @@ export class SensorFormComponent implements OnDestroy {
      */
 
     private populateFormFromImport(): void {
-        const sensorData = this.sensorData();
-        if (!sensorData) {
+        const sensorsData = this.sensorData();
+        if (!sensorsData) {
             return this.notificationService.error(
                 'Hubo un error al cargar los datos de los sensores',
             );
         }
 
-        this.sensorForm.reset();
+        this.coordinates.clear({ emitEvent: false });
 
-        this.sensorForm.patchValue({
-            name: sensorData.name ?? '',
-        });
+        if (!sensorsData.length) return this.addCoordinate();
 
-        this.coordinates.clear();
-
-        if (!sensorData.coordinates.length) return this.addCoordinate();
-
-        sensorData.coordinates.forEach((coord) =>
-            this.coordinates.push(this.buildCoordinateGroup(coord)),
+        sensorsData.forEach((coord) =>
+            this.coordinates.push(this.buildCoordinateGroup(coord), {
+                emitEvent: false,
+            }),
         );
+    }
+
+    /**
+     * Validate if the imported data has the required structure to be processed
+     */
+    private isValidSensorData(data: any): boolean {
+        if (!data || typeof data !== 'object') return false;
+
+        // Normalizamos a array para validar (soporta un solo objeto o una lista)
+        const items = Array.isArray(data) ? data : [data];
+        if (items.length === 0) return false;
+
+        return items.every((item) => {
+            return (
+                item &&
+                typeof item === 'object' &&
+                // Validamos campos numéricos
+                typeof item.lat === 'number' &&
+                typeof item.long === 'number' &&
+                typeof item.height === 'number' &&
+                // Validamos campos de texto (que no sean solo espacios)
+                typeof item.alias === 'string' &&
+                item.alias.trim() !== '' &&
+                typeof item.dev_eui === 'string' &&
+                item.dev_eui.trim() !== '' &&
+                typeof item.join_eui === 'string' &&
+                item.join_eui.trim() !== '' &&
+                typeof item.dev_addr === 'string' &&
+                item.dev_addr.trim() !== ''
+            );
+        });
     }
 
     ngOnDestroy(): void {

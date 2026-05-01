@@ -101,8 +101,8 @@ export class SimulationFormComponent implements OnInit, OnDestroy {
     private readonly simulationController = inject(SimulationControllerService);
     private readonly simulationStateStore = inject(SimulationStateStore);
 
-    protected readonly sensor = computed(() =>
-        this.sensorOfflineService.getLoadedSensor(),
+    protected readonly sensors = computed(() =>
+        this.sensorOfflineService.getLoadedSensors(),
     );
 
     protected readonly creatingSection = signal(false);
@@ -112,7 +112,7 @@ export class SimulationFormComponent implements OnInit, OnDestroy {
         const simulationData = this.simulationData();
         if (!simulationData) return null;
 
-        const { sensorId, id, ...rest } = simulationData;
+        const { id, ...rest } = simulationData;
         return rest;
     });
 
@@ -124,10 +124,6 @@ export class SimulationFormComponent implements OnInit, OnDestroy {
     protected readonly simulationForm = new FormGroup<SimulationFormModel>(
         {
             name: new FormControl('', {
-                nonNullable: true,
-                validators: [Validators.required],
-            }),
-            sensorId: new FormControl(0, {
                 nonNullable: true,
                 validators: [Validators.required],
             }),
@@ -199,7 +195,7 @@ export class SimulationFormComponent implements OnInit, OnDestroy {
     constructor() {
         effect(() => {
             // Re-validate when loaded sensor changes
-            this.sensor();
+            this.sensors();
             this.simulationForm.updateValueAndValidity();
         });
 
@@ -399,6 +395,12 @@ export class SimulationFormComponent implements OnInit, OnDestroy {
     }
 
     protected onDataImported(data: unknown): void {
+        if (!this.isValidSimulationData(data)) {
+            return this.notificationService.error(
+                'Formato no válido. Asegúrese de que la configuración de la simulación tenga el formato correcto.',
+            );
+        }
+
         this.simulationOfflineService.loadSimulation(data);
         this.populateFormFromImport();
 
@@ -600,13 +602,13 @@ export class SimulationFormComponent implements OnInit, OnDestroy {
      */
     private sensorCoordinatesBoundValidator(): ValidatorFn {
         return (group: AbstractControl): ValidationErrors | null => {
-            const sensor = this.sensor();
-            if (!sensor?.coordinates?.length) return null;
+            const sensors = this.sensors();
+            if (!sensors?.length) return null;
 
             const noRepeat = !!group.get('noRepeat')?.value;
             if (!noRepeat) return null;
 
-            const maxCoordinates = sensor.coordinates.length;
+            const maxCoordinates = sensors.length;
             const minRecords = group.get('minRecordsPerInstant')?.value ?? 0;
             const maxRecords = group.get('maxRecordsPerInstant')?.value ?? 0;
 
@@ -640,6 +642,43 @@ export class SimulationFormComponent implements OnInit, OnDestroy {
             const numPoints = control.get('numSectionPoints')?.value ?? 0;
             return acc + numPoints;
         }, 0);
+    }
+
+    /**
+     * Validate that the imported data has a valid structure to be imported on system.
+     */
+    private isValidSimulationData(data: any): boolean {
+        if (!data || typeof data !== 'object') return false;
+
+        // Validar campos de primer nivel
+        const hasBaseFields =
+            typeof data.name === 'string' &&
+            typeof data.timestampIni === 'number' &&
+            typeof data.timestampEnd === 'number' &&
+            typeof data.timeStep === 'number' &&
+            typeof data.parameters === 'string' &&
+            typeof data.minRecordsPerInstant === 'number' &&
+            typeof data.maxRecordsPerInstant === 'number' &&
+            Array.isArray(data.sections);
+
+        if (!hasBaseFields) return false;
+
+        // Validar sub-estructura de secciones y patrones
+        const validFunctionTypes = ['linear', 'curve', 'parabolic'];
+
+        return data.sections.every((section: any) => {
+            const p = section.pattern;
+            return (
+                section &&
+                typeof section.numSectionPoints === 'number' &&
+                p &&
+                typeof p.name === 'string' &&
+                validFunctionTypes.includes(p.fType) &&
+                typeof p.duration === 'number' &&
+                typeof p.initValue === 'number' &&
+                typeof p.endValue === 'number'
+            );
+        });
     }
 
     ngOnDestroy(): void {
