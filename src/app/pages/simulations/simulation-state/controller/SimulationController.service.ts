@@ -69,38 +69,6 @@ export class SimulationControllerService {
         this.storeService.updateState(simId, { isFinished: true });
     }
 
-    // runPeriodic(simulation: SimulationEntity): void {
-    //     this.start(simulation);
-
-    //     const cancel$ =
-    //         this.simulationCancellationSignals$.get(simulation.id) ?? new Subject<void>();
-    //     this.simulationCancellationSignals$.set(simulation.id, cancel$);
-
-    //     // const blocks$ = this.generator.generate(sim, cancel$);
-
-    //     this.generator
-    //         .generate(simulation, cancel$)
-    //         .pipe(
-    //             tap((records) => this.store.addRecords(simulation.id, records)),
-    //             // Comentado temporalmente para pruebas sin envío
-    //             // concatMap((records) =>
-    //             //     this.sendGeneratedData(records, sim.connectionId).pipe(
-    //             //         tap(() =>
-    //             //             console.log(`📡 Bloque enviado (${records.length})`)
-    //             //         )
-    //             //     )
-    //             // ),
-    //             finalize(() => {
-    //                 console.log(`✅ Simulación ${simulation.id} finalizada`);
-    //                 this.stop(simulation.id);
-    //             }),
-    //         )
-    //         .subscribe({
-    //             error: (err) =>
-    //                 console.error(`❌ Error en sim ${simulation.id}`, err),
-    //         });
-    // }
-
     runInstant(simulation: SimulationEntity): void {
         this.start(simulation);
 

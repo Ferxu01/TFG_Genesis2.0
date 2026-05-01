@@ -73,7 +73,7 @@ export class SimulationStateStore {
     setInitialState(simulation: SimulationEntity, isRunning = true): void {
         const initialState: SimulationState = {
             simulation,
-            sensor: null,
+            sensors: [],
             records: [],
             isRunning,
             isPaused: false,

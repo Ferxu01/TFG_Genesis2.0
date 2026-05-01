@@ -2,7 +2,6 @@ import { inject, Injectable } from '@angular/core';
 import { SensorEntity } from 'app/models/Sensor.model';
 import {
     GenerationContext,
-    SimulationBatch,
     SimulationGenerationState,
     SimulationRecords,
 } from 'app/models/Simulation-state.model';
@@ -10,22 +9,6 @@ import { SimulationEntity } from 'app/models/Simulation.model';
 import { GenerateSectionService } from 'app/services/generate-section-data.service';
 import { SensorOfflineService } from 'app/services/offline/sensor-offline.service';
 import { convertSecondsToMilliseconds } from 'app/utils/Date.utils';
-import {
-    catchError,
-    delay,
-    EMPTY,
-    expand,
-    map,
-    Observable,
-    of,
-    Subject,
-    switchMap,
-    takeUntil,
-    takeWhile,
-    tap,
-    timer,
-} from 'rxjs';
-import { SimulationStateStore } from '../store/SimulationStateStore.service';
 import { SimulationDataFactoryService } from './SimulationDataFactory.service';
 
 /**
@@ -40,23 +23,9 @@ export class SimulationGeneratorService {
     );
     private readonly generateSectionService = inject(GenerateSectionService);
     private readonly sensorOfflineService = inject(SensorOfflineService);
-    private readonly simulationStateStoreService = inject(SimulationStateStore);
-
-    // generate(
-    //     simulation: SimulationEntity,
-    //     cancel$: Subject<void>,
-    // ): Observable<SimulationBatch> {
-    //     return this.sensorOfflineService.getLoadedSensor().pipe(
-    //         map((sensor) => this.createContext(simulation, sensor)),
-    //         switchMap((context) =>
-    //             this.runSimulationGeneration(context, cancel$),
-    //         ),
-    //         this.handleFatalErrors<SimulationBatch>(),
-    //     );
-    // }
 
     generateInstant(simulation: SimulationEntity): SimulationRecords {
-        const loadedSensor = this.sensorOfflineService.getLoadedSensor();
+        const loadedSensor = this.sensorOfflineService.getLoadedSensors();
         if (!loadedSensor) return [];
 
         const context = this.createContext(simulation, loadedSensor);
@@ -71,22 +40,6 @@ export class SimulationGeneratorService {
         }
 
         return records;
-    }
-
-    private handleFatalErrors<T>(): (source: Observable<T>) => Observable<T> {
-        return catchError((error) => {
-            console.error('[SimulationGenerator]', error);
-            return EMPTY;
-        });
-    }
-
-    private waitIfPaused(simulation: SimulationEntity): Observable<void> {
-        const state = this.simulationStateStoreService.getStateValue(
-            simulation.id,
-        );
-        if (!state?.isPaused) return of(undefined);
-
-        return timer(500).pipe(switchMap(() => this.waitIfPaused(simulation)));
     }
 
     private isSimulationFinished(context: GenerationContext): boolean {
@@ -145,7 +98,7 @@ export class SimulationGeneratorService {
 
     private createContext(
         simulation: SimulationEntity,
-        sensor: SensorEntity,
+        sensors: SensorEntity,
     ): GenerationContext {
         return {
             simulation: {
@@ -155,7 +108,7 @@ export class SimulationGeneratorService {
                         convertSecondsToMilliseconds(simulation.timeStep),
                 ),
             },
-            sensor,
+            sensors,
             parameters: this.simulationDataFactoryService.parseParameters(
                 simulation.parameters,
             ),
@@ -167,26 +120,6 @@ export class SimulationGeneratorService {
                 currentGenerated: 0,
             },
         };
-    }
-
-    private runSimulationGeneration(
-        context: GenerationContext,
-        cancel$: Subject<void>,
-    ): Observable<SimulationBatch> {
-        return this.runStep(context).pipe(
-            expand(() => this.runStep(context)),
-            takeWhile(() => !this.isSimulationFinished(context), true),
-            takeUntil(cancel$),
-        );
-    }
-
-    private runStep(context: GenerationContext): Observable<SimulationBatch> {
-        if (this.isSimulationFinished(context)) return of([]);
-
-        return this.waitIfPaused(context.simulation).pipe(
-            map(() => this.generateBatch(context)),
-            switchMap((batch) => this.emitBatch(context, batch)),
-        );
     }
 
     private generateBatch(context: GenerationContext) {
@@ -206,19 +139,11 @@ export class SimulationGeneratorService {
             .filter((payload) => !!payload);
     }
 
-    private emitBatch(context: GenerationContext, batch: SimulationBatch) {
-        return this.delayBatchEmission(context, batch).pipe(
-            tap((emittedBatch) =>
-                this.advanceSimulationState(context, emittedBatch.length),
-            ),
-        );
-    }
-
     private generatePayload(
         context: GenerationContext,
         offset: number,
     ): SimulationEntity['parameters'] | null {
-        const { simulation, sensor, parameters, state } = context;
+        const { simulation, sensors, parameters, state } = context;
 
         const index = this.simulationDataFactoryService.selectIndex(context);
         if (index === -1) return null;
@@ -226,7 +151,7 @@ export class SimulationGeneratorService {
         const section = simulation.sections[state.sectionIndex];
         const payload = this.simulationDataFactoryService.generatePayload({
             params: parameters,
-            sensor: sensor.coordinates[index],
+            sensor: sensors[index],
             sectionValue: this.generateSectionService.generateSectionPoint(
                 section,
                 state.indexInSection,
@@ -238,20 +163,5 @@ export class SimulationGeneratorService {
 
         this.advanceSectionState(context);
         return payload;
-    }
-
-    private delayBatchEmission(
-        context: GenerationContext,
-        batch: SimulationBatch,
-    ): Observable<SimulationBatch> {
-        if (!batch.length) return of([]);
-
-        const { simulation } = context;
-
-        const randomInterval =
-            this.simulationDataFactoryService.getRandomInterval(simulation);
-        const delayTime = convertSecondsToMilliseconds(randomInterval);
-
-        return of(batch).pipe(delay(delayTime));
     }
 }

@@ -77,17 +77,6 @@ export class SimulationDataFactoryService {
     }
 
     /**
-     * Calculates a random time interval based on simulation constraints.
-     */
-    getRandomInterval(sim: SimulationEntity): number {
-        const {
-            minIntervalBetweenRecords: min,
-            maxIntervalBetweenRecords: max,
-        } = sim;
-        return Math.floor(Math.random() * (max - min + 1)) + min;
-    }
-
-    /**
      * Determines the number of records to generate in a single instant, respecting limits.
      */
     getRandomRecordsCount(
@@ -127,16 +116,15 @@ export class SimulationDataFactoryService {
     }
 
     selectIndex(context: GenerationContext): number {
-        const { sensor, simulation, state } = context;
-        if (!sensor.coordinates.length) return -1;
+        const { sensors, simulation, state } = context;
+        if (!sensors.length) return -1;
 
         const usedIndexes = state.usedSensorIndexes;
 
         const canRepeat = !simulation.noRepeat;
-        if (canRepeat)
-            return Math.floor(Math.random() * sensor.coordinates.length);
+        if (canRepeat) return Math.floor(Math.random() * sensors.length);
 
-        const availableIndexes = sensor.coordinates
+        const availableIndexes = sensors
             .map((_, index) => index)
             .filter((index) => !usedIndexes.has(index));
         if (!availableIndexes.length) return -1;
