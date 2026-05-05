@@ -289,7 +289,7 @@ export class SensorFormComponent implements OnDestroy {
     private isValidSensorData(data: any): boolean {
         if (!data || typeof data !== 'object') return false;
 
-        // Normalizamos a array para validar (soporta un solo objeto o una lista)
+        // Normalize array to validate
         const items = Array.isArray(data) ? data : [data];
         if (items.length === 0) return false;
 
@@ -297,11 +297,9 @@ export class SensorFormComponent implements OnDestroy {
             return (
                 item &&
                 typeof item === 'object' &&
-                // Validamos campos numéricos
                 typeof item.lat === 'number' &&
                 typeof item.long === 'number' &&
                 typeof item.height === 'number' &&
-                // Validamos campos de texto (que no sean solo espacios)
                 typeof item.alias === 'string' &&
                 item.alias.trim() !== '' &&
                 typeof item.dev_eui === 'string' &&
