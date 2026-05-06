@@ -65,7 +65,7 @@ export class SensorFormComponent implements OnDestroy {
     private readonly sensorOfflineService = inject(SensorOfflineService);
     private readonly _cdr = inject(ChangeDetectorRef);
 
-    protected readonly coordinates = new FormArray<
+    protected readonly sensorsForm = new FormArray<
         FormGroup<SensorCoordinateForm>
     >([], {
         validators: [Validators.required, Validators.minLength(1)],
@@ -76,12 +76,12 @@ export class SensorFormComponent implements OnDestroy {
 
     // Watch for changes in the coordinates form array to trigger re-evaluation of filteredSensors
     private readonly coordinatesSignal = toSignal(
-        this.coordinates.valueChanges.pipe(startWith(this.coordinates.value)),
+        this.sensorsForm.valueChanges.pipe(startWith(this.sensorsForm.value)),
     );
     protected readonly searchQuery = signal('');
     protected readonly filteredSensors = computed(() => {
         const searchQuery = this.searchQuery().toLowerCase().trim();
-        const controls = this.coordinates.controls;
+        const controls = this.sensorsForm.controls;
 
         // Re-execute when any form input changes
         this.coordinatesSignal();
@@ -129,15 +129,17 @@ export class SensorFormComponent implements OnDestroy {
      * @param coord Optional data to populate the new coordinate group.
      */
     protected addCoordinate(coord: Coordinate | null = null): void {
-        this.coordinates.push(this.buildCoordinateGroup(coord));
+        this.sensorsForm.push(this.buildCoordinateGroup(coord));
+        this.sensorsForm.markAsDirty();
     }
 
     protected removeSensor(control: AbstractControl): void {
-        const index = this.coordinates.controls.indexOf(
+        const index = this.sensorsForm.controls.indexOf(
             control as FormGroup<SensorCoordinateForm>,
         );
         if (index === -1) return;
-        this.coordinates.removeAt(index);
+        this.sensorsForm.removeAt(index);
+        this.sensorsForm.markAsDirty();
     }
 
     protected handleSearchChange(event: Event): void {
@@ -159,7 +161,7 @@ export class SensorFormComponent implements OnDestroy {
      * @returns A structured request object for creation or editing.
      */
     private assemblePayload(): SensorCreateRequest {
-        return this.coordinates.getRawValue().map((coordinate) => ({
+        return this.sensorsForm.getRawValue().map((coordinate) => ({
             lat: Number(coordinate.lat),
             long: Number(coordinate.long),
             height: Number(coordinate.height),
@@ -178,7 +180,7 @@ export class SensorFormComponent implements OnDestroy {
         }
 
         this.pendingImportData.set(data);
-        const existingCoordinates = !!this.coordinates.length;
+        const existingCoordinates = !!this.sensorsForm.length;
 
         if (!existingCoordinates) return this.executeDirectImport();
 
@@ -272,12 +274,12 @@ export class SensorFormComponent implements OnDestroy {
             );
         }
 
-        this.coordinates.clear({ emitEvent: false });
+        this.sensorsForm.clear({ emitEvent: false });
 
         if (!sensorsData.length) return this.addCoordinate();
 
         sensorsData.forEach((coord) =>
-            this.coordinates.push(this.buildCoordinateGroup(coord), {
+            this.sensorsForm.push(this.buildCoordinateGroup(coord), {
                 emitEvent: false,
             }),
         );
@@ -313,6 +315,9 @@ export class SensorFormComponent implements OnDestroy {
     }
 
     ngOnDestroy(): void {
-        this.saveSensorData();
+        // Avoid unnecessary writes to offline storage if no changes were made
+        if (this.sensorsForm.dirty) {
+            this.saveSensorData();
+        }
     }
 }

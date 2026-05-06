@@ -682,6 +682,9 @@ export class SimulationFormComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy(): void {
-        this.updateSimulationOffline();
+        // Avoid unnecessary writes to offline storage if no changes were made
+        if (this.simulationForm.dirty) {
+            this.updateSimulationOffline();
+        }
     }
 }
