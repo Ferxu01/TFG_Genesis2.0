@@ -1,5 +1,5 @@
 const chroma = require('chroma-js');
-const _ = require('lodash');
+const _ = require("lodash-es");
 
 /**
  * Generates palettes from the provided configuration.

@@ -26,11 +26,6 @@
                         "tsConfig": "tsconfig.app.json",
                         "inlineStyleLanguage": "scss",
                         "allowedCommonJsDependencies": [
-                            "apexcharts",
-                            "highlight.js",
-                            "crypto-js/enc-utf8",
-                            "crypto-js/hmac-sha256",
-                            "crypto-js/enc-base64",
                             "flat",
                             "quill"
                         ],
@@ -90,10 +85,10 @@
                     "builder": "@angular-devkit/build-angular:dev-server",
                     "configurations": {
                         "production": {
-                          "buildTarget": "fuse:build:production"
+                            "buildTarget": "fuse:build:production"
                         },
                         "development": {
-                          "buildTarget": "fuse:build:development"
+                            "buildTarget": "fuse:build:development"
                         }
                     },
                     "defaultConfiguration": "development"
@@ -101,7 +96,7 @@
                 "extract-i18n": {
                     "builder": "@angular-devkit/build-angular:extract-i18n",
                     "options": {
-                      "buildTarget": "fuse:build"
+                        "buildTarget": "fuse:build"
                     }
                 },
                 "test": {
@@ -119,18 +114,15 @@
                             "src/assets"
                         ],
                         "styles": [
-                        "node_modules/prismjs/themes/prism.css",
-                        "src/styles.css" 
+                            "src/styles.css"
                         ],
-                        "scripts": [
-                        "node_modules/prismjs/prism.js"
-                        ]
+                        "scripts": []
                     }
                 }
             }
         }
     },
     "cli": {
-      "analytics": false
+        "analytics": false
     }
 }
